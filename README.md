@@ -1,5 +1,7 @@
 # My Twitter World 🌍
 
+<a href="https://twitter.com/intent/follow?screen_name=evaristegal0is"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @evaristegal0is"></a>
+
 ### ℹ️ About
 
 During the last year I have found out the Twitter API, so I have written some Python code to collect and analyze data. I also have extracted data and numbers from the datasets about propaganda and disinformation shared by Twitter. I will upload on Github all the code I have written, I am not a Python developer so the code is not so good, but it works. I hope these Python scripts can also be useful to others.
