@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-
 import csv
 import sys
 import os
@@ -125,7 +122,7 @@ try:
 		log_txt.write('[[' + datetime.now().strftime('%d-%m-%Y %H:%M:%S') + ']]  |  Start log\n')
 	log_txt.close()
 	input_id = [0, 200]
-	while True == True:
+	while True:
 		start_time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
 		log_txt = open(fullpathname + '/' + dir_time + '/log_' + search_word + '.txt','a+')
 		log_txt.write('[[' + start_time + ']]  |  CSV Updated\n')
