@@ -1,5 +1,8 @@
 # How to find the User ID of some hashed accounts in the Chinese Twitter dataset 🦆
 
+<a href="https://twitter.com/intent/follow?screen_name=evaristegal0is"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @evaristegal0is"></a>
+
+
 ### ℹ️ About
 
 In August, 2019, Twitter have published a large dataset - splitted in two CSV files - about a [_state-backed information operation focused on the situation in Hong Kong_](https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html). This is a important data collection about a new state: China. The first analysis shows many differences between this dataset and the Internet Research Agency one, but there is a particular difference between these two datasets: how Twitter have built them.
