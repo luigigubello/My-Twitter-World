@@ -63,6 +63,8 @@ def hashtag_analisys(api, directory, input_id):
 			max_id = input_id[0] - 100 #puoi cambiare questo numero, default = 100
 			input_id[0] = max_id
 		search = api.request('search/tweets', {'q': search_word, 'count':'100', 'result_type':'recent', 'max_id':max_id})
+		# '-filter:retweets' esclude i retweets
+		#search = api.request('search/tweets', {'q': search_word + ' -filter:retweets', 'count':'100', 'result_type':'recent', 'max_id':max_id})
 
 	t_tweet_date = (list(post['created_at'] for post in search))
 	t_tweet_id = (list(post['id'] for post in search))
