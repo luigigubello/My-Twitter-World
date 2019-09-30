@@ -43,8 +43,7 @@ def hashtag_analisys(api, directory, input_id):
 	if not os.path.exists(fullpathname + '/' + search_word + '_' + day_story + '.csv'):
 		with open(os.path.join(fullpathname, search_word + '_' + day_story + '.csv'), 'w') as csvfile:
 			filewriter = csv.writer(csvfile, sys.stdout, lineterminator='\n', delimiter=',',quotechar='"', quoting=csv.QUOTE_ALL)
-			filewriter.writerow(['tweet_date', 'tweetid', 'tweet_text', 'retweet_count', 'favorite_count', 'truncated', 'tweet_client_name', 'user_country_code', 'user_screen_name', 'user_profile_description'])
-
+			filewriter.writerow(['tweet_date', 'tweetid', 'tweet_text', 'retweet_count', 'favorite_count', 'truncated', 'tweet_client_name', 'user_country_code', 'userid', 'user_screen_name', 'user_display_name', 'user_profile_description', 'follower_count', 'following_count', 'account_creation_date', 'statues_count', 'profile_image_url', 'default_profile_image'])
 				
 	# Lista di features estratte da ogni tweets
 	if last_id == 0:
@@ -92,16 +91,23 @@ def hashtag_analisys(api, directory, input_id):
 		except TypeError:
 			text = 'NULL'
 		t_tweet_country.append(text)		
-	list_screen_name = (list(post['user']['screen_name'] for post in search))
-	list_description = (list(post['user']['description'] for post in search))
-
+	t_user_id = (list(post['user']['id'] for post in search))		
+	t_screen_name = (list(post['user']['screen_name'] for post in search))
+	t_name = (list(post['user']['name'] for post in search))
+	t_description = (list(post['user']['description'] for post in search))
+	t_follower_count = (list(post['user']['followers_count'] for post in search))
+	t_following_count = (list(post['user']['friends_count'] for post in search))
+	t_created_at = (list(post['user']['created_at'] for post in search))
+	t_statuses_count = (list(post['user']['statuses_count'] for post in search))
+	t_profile_image_url = (list(post['user']['profile_image_url_https'] for post in search))
+	t_default_image = (list(post['user']['default_profile_image'] for post in search))
+	
 	i = 0
 	while i < len(list_screen_name):
 
 		with open(os.path.join(fullpathname, search_word + '_' + day_story + '.csv'), 'a') as csvfile:
 			filewriter = csv.writer(csvfile, sys.stdout, lineterminator='\n', delimiter=',',quotechar='"', quoting=csv.QUOTE_ALL)
-			filewriter.writerow([t_tweet_date[i], t_tweet_id[i], t_tweet_text[i], t_tweet_retweet[i], t_tweet_favorite[i], t_tweet_truncated[i], t_tweet_ua[i], t_tweet_country[i], list_screen_name[i], list_description[i]])
-		i += 1
+			filewriter.writerow([t_tweet_date[i], t_tweet_id[i], t_tweet_text[i], t_tweet_retweet[i], t_tweet_favorite[i], t_tweet_truncated[i], t_tweet_ua[i], t_tweet_country[i], t_user_id[i], t_screen_name[i], t_name[i], t_description[i], t_follower_count[i], t_following_count[i], t_created_at[i], t_statuses_count[i], t_profile_image_url[i], t_default_image[i]])		i += 1
 
 	return(input_id)
 
