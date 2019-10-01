@@ -11,5 +11,5 @@ The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
 ### ⚙️ How To Use
 
 1. Install the requirements: `sudo pip3 install -r requirements.txt`
-2. Launch the script: `python3 user-analysis.py username path`. The first argument is the username of an account in the Twitter dataset and the second one is the path of the Twitter dataset
+2. Launch the script: `python3 user_analysis.py username path`. The first argument is the username of an account in the Twitter dataset and the second one is the path of the Twitter dataset
 3. Wait the output
