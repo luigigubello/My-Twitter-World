@@ -16,6 +16,10 @@ def user_analysis(username, path_csv):
 	tweet_time = list(data.tweet_time)
 	is_retweet = list(data.is_retweet)
 	account_creation_date = list(data.account_creation_date)
+	reply_count = list(data.reply_count)
+	like_count = list(data.like_count)
+	retweet_count = list(data.retweet_count)
+	quote_count = list(data.quote_count)
 
 	volume_tweet = [] # [year, [..., [month, number_of_tweets, number_of_retweets], ...]]
 	year = [[1, 0, 0, 0, 0, 0, 0], [2, 0, 0, 0, 0, 0, 0], [3, 0, 0, 0, 0, 0, 0], [4, 0, 0, 0, 0, 0, 0], [5, 0, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0, 0], [7, 0, 0, 0, 0, 0, 0], [8, 0, 0, 0, 0, 0, 0], [9, 0, 0, 0, 0, 0, 0], [10, 0, 0, 0, 0, 0, 0], [11, 0, 0, 0, 0, 0, 0], [12, 0, 0, 0, 0, 0, 0]]
