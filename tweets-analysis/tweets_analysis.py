@@ -118,7 +118,7 @@ def volume_tweet_plot(volume, language):
 	plt.savefig(language + '_volume_tweet.png', bbox_inches='tight', dpi=200)
 	plt.close()
 
-def volume_inreaction_plot(volume, language):
+def volume_interaction_plot(volume, language):
 	y1 = []
 	y2 = []
 	y3 = []
@@ -153,7 +153,7 @@ try:
 	vector = tweet_analysis(args.lang, args.path)
 	if vector != []:
 		volume_tweet_plot(vector, args.lang)
-		volume_inreaction_plot(vector, args.lang)
+		volume_interaction_plot(vector, args.lang)
 	else:
 		print('\x1b[1;39;49m' + 'This language is not in the dataset' + '\x1b[0m')
 	print('\x1b[1;39;49m' + 'Done!' + '\x1b[0m')
