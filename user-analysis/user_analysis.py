@@ -21,7 +21,7 @@ def user_analysis(username, path_csv):
 	retweet_count = list(data.retweet_count)
 	quote_count = list(data.quote_count)
 
-	volume_tweet = [] # [year, [..., [month, number_of_tweets, number_of_retweets], ...]]
+	volume_tweet = [] # [year, [..., [month, number_of_tweets, number_of_retweets, replies, hearts, retweets, quotes], ...]]
 	year = [[1, 0, 0, 0, 0, 0, 0], [2, 0, 0, 0, 0, 0, 0], [3, 0, 0, 0, 0, 0, 0], [4, 0, 0, 0, 0, 0, 0], [5, 0, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0, 0], [7, 0, 0, 0, 0, 0, 0], [8, 0, 0, 0, 0, 0, 0], [9, 0, 0, 0, 0, 0, 0], [10, 0, 0, 0, 0, 0, 0], [11, 0, 0, 0, 0, 0, 0], [12, 0, 0, 0, 0, 0, 0]]
 	day = [[0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],[8, 0],[9, 0],[10, 0],[11, 0],[12, 0],[13, 0],[14, 0],[15, 0],[16, 0],[17, 0],[18, 0],[19, 0],[20, 0],[21, 0],[22, 0],[23, 0]]
 	daily_rhytm = [] # [day, [..., [hour, number_of_tweets], ...]]
