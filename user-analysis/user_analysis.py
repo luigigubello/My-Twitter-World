@@ -18,8 +18,7 @@ def user_analysis(username, path_csv):
 	account_creation_date = list(data.account_creation_date)
 
 	volume_tweet = [] # [year, [..., [month, number_of_tweets, number_of_retweets], ...]]
-	year = [[1, 0, 0], [2, 0, 0], [3, 0, 0], [4, 0, 0], [5, 0, 0], [6, 0, 0], [7, 0, 0], [8, 0, 0], [9, 0, 0], [10, 0, 0], [11, 0, 0], [12, 0, 0]]
-	day = [[0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],[8, 0],[9, 0],[10, 0],[11, 0],[12, 0],[13, 0],[14, 0],[15, 0],[16, 0],[17, 0],[18, 0],[19, 0],[20, 0],[21, 0],[22, 0],[23, 0]]
+	year = [[1, 0, 0, 0, 0, 0, 0], [2, 0, 0, 0, 0, 0, 0], [3, 0, 0, 0, 0, 0, 0], [4, 0, 0, 0, 0, 0, 0], [5, 0, 0, 0, 0, 0, 0], [6, 0, 0, 0, 0, 0, 0], [7, 0, 0, 0, 0, 0, 0], [8, 0, 0, 0, 0, 0, 0], [9, 0, 0, 0, 0, 0, 0], [10, 0, 0, 0, 0, 0, 0], [11, 0, 0, 0, 0, 0, 0], [12, 0, 0, 0, 0, 0, 0]]	day = [[0, 0],[1, 0],[2, 0],[3, 0],[4, 0],[5, 0],[6, 0],[7, 0],[8, 0],[9, 0],[10, 0],[11, 0],[12, 0],[13, 0],[14, 0],[15, 0],[16, 0],[17, 0],[18, 0],[19, 0],[20, 0],[21, 0],[22, 0],[23, 0]]
 	daily_rhytm = [] # [day, [..., [hour, number_of_tweets], ...]]
 	k = 0
 	while k < 7:
@@ -36,6 +35,14 @@ def user_analysis(username, path_csv):
 							month[1] += 1
 						else:
 							month[2] += 1
+						if str(reply_count[i]) != 'nan' and str(reply_count[i]) != 'NaN':
+							month[3] += int(reply_count[i])
+						if str(like_count[i]) != 'nan' and str(like_count[i]) != 'NaN':
+							month[4] += int(like_count[i])
+						if str(retweet_count[i]) != 'nan' and str(retweet_count[i]) != 'NaN':
+							month[5] += int(retweet_count[i])
+						if str(quote_count[i]) != 'nan' and str(quote_count[i]) != 'NaN':
+							month[6] += int(quote_count[i])						
 						break
 				volume_tweet.append([int(tweet_time[i][:4]), year_array])
 			else:
@@ -48,6 +55,14 @@ def user_analysis(username, path_csv):
 										month[1] += 1
 									else:
 										month[2] += 1
+									if str(reply_count[i]) != 'nan' and str(reply_count[i]) != 'NaN':
+										month[3] += int(reply_count[i])
+									if str(like_count[i]) != 'nan' and str(like_count[i]) != 'NaN':
+										month[4] += int(like_count[i])
+									if str(retweet_count[i]) != 'nan' and str(retweet_count[i]) != 'NaN':
+										month[5] += int(retweet_count[i])
+									if str(quote_count[i]) != 'nan' and str(quote_count[i]) != 'NaN':
+										month[6] += int(quote_count[i])
 									k = 1
 									break
 				if k == 0:
@@ -58,6 +73,14 @@ def user_analysis(username, path_csv):
 								month[1] += 1
 							else:
 								month[2] += 1
+							if str(reply_count[i]) != 'nan' and str(reply_count[i]) != 'NaN':
+								month[3] += int(reply_count[i])
+							if str(like_count[i]) != 'nan' and str(like_count[i]) != 'NaN':
+								month[4] += int(like_count[i])
+							if str(retweet_count[i]) != 'nan' and str(retweet_count[i]) != 'NaN':
+								month[5] += int(retweet_count[i])
+							if str(quote_count[i]) != 'nan' and str(quote_count[i]) != 'NaN':
+								month[6] += int(quote_count[i])
 							break
 					volume_tweet.append([int(tweet_time[i][:4]), year_array])
 
@@ -99,10 +122,34 @@ def volume_tweet(volume, username):
 	plt.legend()
 	plt.savefig(username + '_tweet_date_list.png', bbox_inches='tight', dpi=200)
 	plt.close()
+	
+def volume_interaction(volume, username):
+	y1 = []
+	y2 = []
+	y3 = []
+	y4 = []
+	x_label = []
+	for element in volume:
+		for elem in element[1]:
+			if elem[0] % 3 == 1:
+				x_label.append(calendar.month_abbr[elem[0]] + ' \'' + str(element[0])[2:])
+			y1.append(elem[6])
+			y2.append(elem[3])
+			y3.append(elem[5])
+			y4.append(elem[4])
+	x = np.arange(len(y1))
+	plt.plot(x, y1, label='quote', color='purple', markersize=2)
+	plt.plot(x, y2, label='reply', color='skyblue', markersize=2)
+	plt.plot(x, y3, label='retweet', color='green', markersize=2)
+	plt.plot(x, y4, label='heart', color='red', markersize=2)
+	plt.xticks(np.arange(0, len(y1), 3), x_label, rotation=45, fontsize=5)
+	plt.legend()
+	plt.savefig(username + '_volume_interactions.png', bbox_inches='tight', dpi=200)
+	plt.close()
 
-def daily_rhytm(week_rhytm, username):
+def daily_rhythm(week_rhythm, username):
 	week = []
-	for element in week_rhytm:
+	for element in week_rhythm:
 		day = []
 		for hour in element[1]:
 			day.append(hour[1])
@@ -123,7 +170,8 @@ try:
 	print('\x1b[1;39;49m' + 'Wait...' + '\x1b[0m')
 	vectors = user_analysis(args.username, args.path)
 	volume_tweet(vectors[0], args.username)
-	daily_rhytm(vectors[1], args.username)
+	volume_interaction(vectors[0], args.username)
+	daily_rhythm(vectors[1], args.username)
 	print('\x1b[1;39;49m' + 'Done!' + '\x1b[0m')
 except KeyboardInterrupt:
 	print('\x1b[1;39;49m' + '\n\nGoodbye\n' + '\x1b[0m')
