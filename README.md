@@ -15,7 +15,7 @@ During the last year I have found out the Twitter API, so I have written some Py
 
 ### 🔗 Some Twitter threads:
 
-[🇬🇧] [Some numbers about the suspended accounts linked to Partido Popular](https://twitter.com/evaristegal0is/status/1180804950651215872)
+[🇬🇧] [Some numbers about the suspended accounts linked to Partido Popular](https://twitter.com/evaristegal0is/status/1180804950651215872)<br />
 [🇬🇧] [The suspended user @IYASHI_Y](https://twitter.com/evaristegal0is/status/1179373176670826496)<br />
 [🇮🇹] [Lo strano utente @JppMorgann](https://threadreaderapp.com/thread/1166660678222045184.html)<br/>
 [🇬🇧] [About Twitter dataset on the disinformation on situation in Hong Kong](https://threadreaderapp.com/thread/1164081670573760513.html)<br/>
