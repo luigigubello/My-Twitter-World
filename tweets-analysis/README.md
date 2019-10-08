@@ -10,5 +10,5 @@ The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
 ### ⚙️ How To Use
 
 1. Install the requirements: `sudo pip3 install -r requirements.txt`
-2. Launch the script: `python3 tweets_analysis.py path --lang=language`. The argument `--lang` is optional, the default value is **all**, you can change it to analyze only tweets written in a particular language.
+2. Launch the script: `python3 tweets_analysis.py --path PATH`. You can analyse all the tweets written in a particular language by typing the optional argument `--tlang LANG` or you can analyse all the tweets written by accounts that set a particual language by typing the optional argument `--ulang LANG`. Both `--tlang` and `--ulang` have **all** as default value.
 3. Wait the output
