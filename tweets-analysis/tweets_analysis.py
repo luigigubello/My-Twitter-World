@@ -65,7 +65,7 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 	like_count = list(data.like_count)
 	retweet_count = list(data.retweet_count)
 	quote_count = list(data.quote_count)
-
+	language_count = {}
 	def tweet_data():
 		if int(tweet_time[i][:4]) in volume_tweet:
 			if str(is_retweet[i]).lower() == 'false':
@@ -111,10 +111,10 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 					volume_creation[int(account_creation_date[i][:4])] = creation_array
 				account_count.append(str(user_screen_name[i]))
 			if str(tweet_language[i]).lower() != 'nan' and str(tweet_language[i]).lower() != 'und': # Remove unclassified languages
-				if str(tweet_language[i]) in language_dictionary:
-					language_dictionary[str(tweet_language[i])] += 1
+				if str(tweet_language[i]) in language_count:
+					language_count[str(tweet_language[i])] += 1
 				else:
-					language_dictionary[str(tweet_language[i])] = 1
+					language_count[str(tweet_language[i])] = 1
 
 		if str(tweet_client_name[i]) in user_agent:
 			user_agent[str(tweet_client_name[i])] += 1
@@ -169,15 +169,19 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 				year_array = copy.deepcopy(creation_year)
 				volume_creation[volume_years[j]+1] = year_array
 			j += 1
-	if language_dictionary != {}:
-		lang_keys = list(language_dictionary)
-		#print(lang_keys)
+	if language_count != {}:
+		lang_keys = list(language_count)
 		for item in lang_keys:
 			lang_tw = langcodes.standardize_tag(item)
 			new_key = langcodes.Language.make(language=lang_tw).language_name()
-			#print(new_key)
-			language_dictionary[new_key] = language_dictionary[item]
-			del language_dictionary[item]
+			language_count[new_key] = language_count[item]
+			del language_count[item]
+		lang_keys = list(language_count)
+		for item in lang_keys:
+			if item in language_dictionary:
+				language_dictionary[item] += language_count[item]
+			else:
+				language_dictionary[item] = language_count[item]
 	return([volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count])
 
 def volume_tweet_plot(volume, language):
