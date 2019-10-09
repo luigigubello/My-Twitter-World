@@ -4,11 +4,23 @@
 
 ### ℹ️ About
 
-Twitter [are continuing to release datasets](https://blog.twitter.com/en_us/topics/company/2019/info-ops-disclosure-data-september-2019.html) about disinformation campaigns on the social network. The CSV files of these datasets have always the same structure, so I have written a little script to create the graphs of tweet volume and interactions volume. The script can analyze all tweets in the dataset or tweets subsets divided by language. I have used this code [in my analysis](https://www.gubello.me/blog/about-iran-and-ira-twitter-datasets-for-fun-part-iii/) about Internet Research Agency propaganda.</br>
+Twitter [are continuing to release datasets](https://blog.twitter.com/en_us/topics/company/2019/info-ops-disclosure-data-september-2019.html) about disinformation campaigns on the social network. The CSV files of these datasets have always the same structure, so I have written a little script to create some graphs to better understand the data. I have used this code [in my analysis](https://www.gubello.me/blog/about-iran-and-ira-twitter-datasets-for-fun-part-iii/) about Internet Research Agency propaganda.</br>
 The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
 
 ### ⚙️ How To Use
 
-1. Install the requirements: `sudo pip3 install -r requirements.txt`
-2. Launch the script: `python3 tweets_analysis.py --path PATH`. You can analyse all the tweets written in a particular language by typing the optional argument `--tlang LANG` or you can analyse all the tweets written by accounts that set a particual language by typing the optional argument `--ulang LANG`. Both `--tlang` and `--ulang` have **all** as default value.
-3. Wait the output
+```
+usage: tweets_analysis.py [-h] [--path [PATH [PATH ...]]] [--tlang TLANG | --ulang ULANG] [-w] [-csv] [-txt]
+
+Twitter dataset tweets' analysis
+
+required arguments:
+  --path [PATH [PATH ...]]  path of Twitter dataset(s)
+
+optional arguments:
+  -h, --help                show this help message and exit
+  --tlang TLANG             language of tweets to analyse
+  --ulang ULANG             language of accounts to analyse
+  -w                        large wordclouds are slow to build, so active this parameter only if you are patient
+  -csv                      save info into csv files
+  -txt                      save all details into txt files
