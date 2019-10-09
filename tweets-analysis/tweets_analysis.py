@@ -12,6 +12,7 @@ import datetime
 import operator
 import re
 import csv
+import langcodes
 
 from wordcloud import WordCloud
 from PIL import Image
@@ -109,10 +110,11 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 					creation_array[int(account_creation_date[i][5:7])] += 1
 					volume_creation[int(account_creation_date[i][:4])] = creation_array
 				account_count.append(str(user_screen_name[i]))
-			if str(tweet_language[i]) in language_dictionary:
-				language_dictionary[str(tweet_language[i])] += 1
-			else:
-				language_dictionary[str(tweet_language[i])] = 1
+			if str(tweet_language[i]).lower() != 'nan' and str(tweet_language[i]).lower() != 'und': # Remove unclassified languages
+				if str(tweet_language[i]) in language_dictionary:
+					language_dictionary[str(tweet_language[i])] += 1
+				else:
+					language_dictionary[str(tweet_language[i])] = 1
 
 		if str(tweet_client_name[i]) in user_agent:
 			user_agent[str(tweet_client_name[i])] += 1
@@ -131,7 +133,7 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 		if str(hashtags[i]).lower() != 'nan':
 			var = ''.join(x.lower() for x in str(hashtags[i]) if x not in punct)
 			var_list = var.split(', ')
-			var_list = list(set(var_list)) ## Remove duplicates
+			var_list = list(set(var_list)) # Remove duplicates
 			for element in var_list:
 				if element != '':
 					if str(element) in hashtag:
@@ -167,6 +169,15 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 				year_array = copy.deepcopy(creation_year)
 				volume_creation[volume_years[j]+1] = year_array
 			j += 1
+	if language_dictionary != {}:
+		lang_keys = list(language_dictionary)
+		#print(lang_keys)
+		for item in lang_keys:
+			lang_tw = langcodes.standardize_tag(item)
+			new_key = langcodes.Language.make(language=lang_tw).language_name()
+			#print(new_key)
+			language_dictionary[new_key] = language_dictionary[item]
+			del language_dictionary[item]
 	return([volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count])
 
 def volume_tweet_plot(volume, language):
