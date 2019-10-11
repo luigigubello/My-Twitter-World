@@ -347,12 +347,12 @@ def split(filename, dirname, number, v):
 				print('\x1b[1;39;49m' + 'Loading {} tweets'.format((k-1)*number+i) + '\x1b[0m')
 		k += 1
 
-parser = argparse.ArgumentParser(description='Twitter dataset tweets\' analysis')
+parser = argparse.ArgumentParser(description='Twitter disinformation datasets\' analysis')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--path', nargs='*', help='path of Twitter dataset')
-group.add_argument('--dirpath', help='path of the dir cotaining Twitter dataset(s)')
+group.add_argument('--dirpath', help='path of the directory cotaining Twitter dataset(s)')
 group.add_argument('--split', nargs='*', help='split a CSV file in smaller CSV files, it can be slow')
-parser.add_argument('--index', required=False, type=int, default=1000000, help='number of rows of splitted CSV files')
+parser.add_argument('--index', required=False, type=int, default=1000000, help='number of rows of each splitted CSV files')
 group1 = parser.add_mutually_exclusive_group()
 group1.add_argument('--tlang', default='all', help='language of tweets to analyse')
 group1.add_argument('--ulang', default='all', help='language of accounts to analyse')
