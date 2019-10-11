@@ -10,17 +10,26 @@ The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
 ### ⚙️ How To Use
 
 ```
-usage: tweets_analysis.py [-h] [--path [PATH [PATH ...]]] [--tlang TLANG | --ulang ULANG] [-w] [-csv] [-txt]
+usage: tweets_analysis.py [-h]
+                          (--path [PATH [PATH ...]] | --dirpath DIRPATH | --split [SPLIT [SPLIT ...]])
+                          [--index INDEX] [--tlang TLANG | --ulang ULANG]
+                          [-w] [-csv] [-txt] [-v]
 
-Twitter dataset tweets' analysis
+Twitter disinformation datasets' analysis
 
 required arguments:
-  --path [PATH [PATH ...]]  path of Twitter dataset(s)
+  --path [PATH [PATH ...]]
+                        path of Twitter dataset
+  --dirpath DIRPATH     path of the directory cotaining Twitter dataset(s)
+  --split [SPLIT [SPLIT ...]]
+                          split a CSV file in smaller CSV files, it can be slow
 
 optional arguments:
-  -h, --help                show this help message and exit
-  --tlang TLANG             language of tweets to analyse
-  --ulang ULANG             language of accounts to analyse
-  -w                        large wordclouds are slow to build, so active this parameter only if you are patient
-  -csv                      save info into csv files
-  -txt                      save all details into txt files
+  -h, --help            show this help message and exit
+  --index INDEX         number of rows of each splitted CSV files
+  --tlang TLANG         language of tweets to analyse
+  --ulang ULANG         language of accounts to analyse
+  -w                    large wordclouds are slow to build, so active this parameter only if you are patient
+  -csv                  save info into csv files
+  -txt                  save all details into txt files
+  -v                    verbose mode
