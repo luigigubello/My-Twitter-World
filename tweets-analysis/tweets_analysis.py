@@ -192,7 +192,7 @@ def tweet_analysis(language_tweet, language_user, verbose, path_csv, volume_twee
 				language_dictionary[item] = language_count[item]
 	return([volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count])
 
-def volume_tweet_plot(volume, language):
+def volume_tweet_plot(volume, language, titleplot):
 	volume_years = sorted(volume.keys())
 	y1 = [] # retweets
 	y2 = [] # tweets
@@ -208,10 +208,11 @@ def volume_tweet_plot(volume, language):
 	plt.plot(x, y2, label='tweet', color='skyblue', markersize=2)
 	plt.xticks(np.arange(0, len(y1), 3), x_label, rotation=45, fontsize=5)
 	plt.legend()
+	plt.title(titleplot, fontsize=10)
 	plt.savefig(language + '_volume_tweet.png', bbox_inches='tight', dpi=250)
 	plt.close()
 
-def volume_interaction_plot(volume, language):
+def volume_interaction_plot(volume, language, titleplot):
 	volume_years = sorted(volume.keys())
 	y1 = [] # quotes
 	y2 = [] # replies
@@ -233,10 +234,11 @@ def volume_interaction_plot(volume, language):
 	plt.plot(x, y4, label='heart', color='red', markersize=2)
 	plt.xticks(np.arange(0, len(y1), 3), x_label, rotation=45, fontsize=5)
 	plt.legend()
+	plt.title(titleplot, fontsize=10)
 	plt.savefig(language + '_volume_interactions.png', bbox_inches='tight', dpi=250)
 	plt.close()
 
-def daily_rhythm_plot(week_rhythm, language):
+def daily_rhythm_plot(week_rhythm, language, titleplot):
 	week = []
 	for k in range(7):
 		day = []
@@ -246,10 +248,11 @@ def daily_rhythm_plot(week_rhythm, language):
 	df = pd.DataFrame(week, columns=['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'])
 	plt.figure(figsize=(10,5))
 	sns.heatmap(df, yticklabels=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], annot=False, linewidths=.5)
+	plt.title(titleplot, fontsize=15)
 	plt.savefig(language + '_density.png', bbox_inches='tight', dpi=200)
 	plt.close()
 
-def creation_plot(volume, language):
+def creation_plot(volume, language, titleplot):
 	volume_years = sorted(volume.keys())
 	y1 = []
 	x_label = []
@@ -261,10 +264,11 @@ def creation_plot(volume, language):
 	x = np.arange(len(y1))
 	plt.bar(x, y1)
 	plt.xticks(np.arange(0, len(y1), 3), x_label, rotation=45, fontsize=5)
+	plt.title(titleplot, fontsize=10)
 	plt.savefig(language + '_creation_date.png', bbox_inches='tight', dpi=250)
 	plt.close()
 
-def barplot(dictionary, language, x_label, title):
+def barplot(dictionary, language, x_label, title, titleplot):
 	sorted_dictionary = sorted(dictionary.items(), key=operator.itemgetter(1))[::-1]
 	height = [] # values of dict
 	bars = [] # keys of dict
@@ -289,12 +293,13 @@ def barplot(dictionary, language, x_label, title):
 	plt.bar(y_pos, height, color='#2196f3', edgecolor='#64b5f6', width=barWidth)
 	plt.xticks(y_pos, bars, rotation=90, fontsize=5)
 	plt.xlabel(x_label)
+	plt.title(titleplot, fontsize=10)
 	plt.ylabel('# Tweets')
 	plt.tight_layout()
 	plt.savefig(language + '_' + title + '.png', bbox_inches='tight', dpi=200)
 	plt.close()
 
-def wordcloud(words, language, gradient, title):
+def wordcloud(words, language, gradient, title, titleplot):
 	twitter_mask = np.array(Image.open('twitter_mask.png'))
 	text = ''
 	for key in words:
@@ -307,6 +312,7 @@ def wordcloud(words, language, gradient, title):
 	plt.figure(figsize=(12.8,9.6), dpi=100)
 	plt.imshow(wordcloud, interpolation="bilinear")
 	plt.axis('off')
+	plt.title(titleplot, fontsize=24)
 	plt.tight_layout()
 	plt.savefig(language + '_' + title + '.png')
 	plt.close()
@@ -432,20 +438,47 @@ try:
 			lang = args.tlang
 		else:
 			lang = args.ulang
-		volume_tweet_plot(volume_tweet, lang)
-		volume_interaction_plot(volume_tweet, lang)
-		daily_rhythm_plot(daily_rhytm, lang)
+		if args.tlang !='all':
+			lang_title = langcodes.Language.make(language=lang).language_name()
+			titleplot_volume_tweet = lang_title + ' tweets volume by month'
+			titleplot_volume_interaction = lang_title + ' tweets interactions volume by month'
+			titleplot_daily_rhytm = lang_title + ' tweets daily rhythm'
+			titleplot_user_agent = 'Twitter clients used to write ' + lang_title + ' tweets'
+			titleplot_retweeted_user = 'Retweeted users in ' + lang_title + ' retweets'
+			titleplot_hashtag = 'Hashtags in ' + lang_title + ' tweets'
+		elif args.ulang != 'all':
+			lang_title = langcodes.Language.make(language=lang).language_name()
+			titleplot_volume_tweet = 'Tweets volume of ' + lang_title + ' accounts by month'
+			titleplot_volume_interaction = 'Interactions with ' + lang_title + ' accounts - Volume by month'
+			titleplot_daily_rhytm = lang_title + ' accounts daily rhythm'
+			titleplot_volume_creation = 'Number of created ' + lang_title + ' accounts by month'
+			titleplot_user_agent = 'Twitter clients used by ' + lang_title + ' accounts'
+			titleplot_language_dictionary = 'Languages of tweets written by ' + lang_title + ' accounts'
+			titleplot_retweeted_user = 'Retweeted users by ' + lang_title + ' accounts'
+			titleplot_hashtag = 'Hashtags used by ' + lang_title + ' accounts'
+		else:
+			titleplot_volume_tweet = 'Tweets volume'
+			titleplot_volume_interaction = 'Interactions volume by month'
+			titleplot_daily_rhytm = 'Tweets daily rhythm'
+			titleplot_volume_creation = 'Number of created accounts by month'
+			titleplot_user_agent = 'Twitter clients'
+			titleplot_language_dictionary = 'Languages of tweets'
+			titleplot_retweeted_user = 'Retweeted users'
+			titleplot_hashtag = 'Hashtags'		
+		volume_tweet_plot(volume_tweet, lang, titleplot_volume_tweet)
+		volume_interaction_plot(volume_tweet, lang, titleplot_volume_interaction)
+		daily_rhythm_plot(daily_rhytm, lang, titleplot_daily_rhytm)
 		if args.tlang == 'all':
-			creation_plot(volume_creation, lang)
-		barplot(user_agent, lang, 'Twitter clients', 'user_agent')
+			creation_plot(volume_creation, lang, titleplot_volume_creation)
+		barplot(user_agent, lang, 'Twitter clients', 'user_agent', titleplot_user_agent)
 		if args.tlang == 'all':
-			barplot(language_dictionary, lang, 'Tweets languages', 'tweets_language')
+			barplot(language_dictionary, lang, 'Tweets languages', 'tweets_language', titleplot_language_dictionary)
 		
 		if args.w == True:
 			if args.v == True:
 				print('\x1b[1;39;49m' + 'Creating the wordclouds, it is slow, be very patient...' + '\x1b[0m')
-			wordcloud(retweeted_user, lang, 'winter', 'retweeted_user')
-			wordcloud(hashtag, lang, 'tab10', 'hashtag')
+			wordcloud(retweeted_user, lang, 'winter', 'retweeted_user', titleplot_retweeted_user)
+			wordcloud(hashtag, lang, 'tab10', 'hashtag', titleplot_hashtag)
 		
 		if args.csv == True:
 			sorted_volume = sorted(volume_tweet.items(), key=operator.itemgetter(0))
@@ -486,41 +519,43 @@ try:
 				for item in sorted_hashtag:	
 					csv_out.writerow(item)
 			sorted_language_tweet = sorted(language_dictionary.items(), key=operator.itemgetter(1))[::-1]
-			with open('language_tweet.csv','wt') as out:
-				csv_out=csv.writer(out)
-				csv_out.writerow(['language_tweet','times'])
-				for item in sorted_language_tweet:	
-					csv_out.writerow(item)
+			if args.tlang == 'all':
+				with open('language_tweet.csv','wt') as out:
+					csv_out=csv.writer(out)
+					csv_out.writerow(['language_tweet','times'])
+					for item in sorted_language_tweet:	
+						csv_out.writerow(item)
 		
 		if args.txt == True:
-			volume_tweet_interaction_txt = open('volume_tweet_interaction.txt','w+')
+			volume_tweet_interaction_txt = open(lang + '_volume_tweet_interaction.txt','w+')
 			volume_tweet_interaction_txt.write('Volume of tweets and interactions\n\n')
 			volume_tweet_interaction_txt.write('# volume_tweet = { year : { month : [number_of_tweets, number_of_retweets, replies, hearts, retweets, quotes] } }\n\n')
 			volume_tweet_interaction_txt.write(str(sorted(volume_tweet.items(), key=operator.itemgetter(0))))
-			daily_rhythm_txt = open('daily_rhythm.txt', 'w+')
+			daily_rhythm_txt = open(lang + '_daily_rhythm.txt', 'w+')
 			daily_rhythm_txt.write('Daily rhythm\n\n')
 			daily_rhythm_txt.write('# daily_rhytm = { day : { hour: number_of_tweets } }\n\n')
 			daily_rhythm_txt.write(str(daily_rhytm))
-			volume_creation_txt = open('volume_creation.txt','w+')
-			volume_creation_txt.write('Created accounts by month\n\n')
-			volume_creation_txt.write('# volume_creation = { year : { month : number_of_created_accounts } }\n\n')
-			volume_creation_txt.write(str(sorted(volume_creation.items(), key=operator.itemgetter(0))))
-			user_agent_txt = open('clients.txt','w+')
+			user_agent_txt = open(lang + '_clients.txt','w+')
 			user_agent_txt.write('Twitter clients\n\n')
 			user_agent_txt.write('# user_agent = { client : number }\n\n')
 			user_agent_txt.write(str(sorted(user_agent.items(), key=operator.itemgetter(1))[::-1]))
-			retweeted_user_txt = open('retweeted_user.txt','w+')
+			retweeted_user_txt = open(lang + '_retweeted_user.txt','w+')
 			retweeted_user_txt.write('Retweeted users\n\n')
 			retweeted_user_txt.write('# retweeted_user = { retweeted user : number }\n\n')
 			retweeted_user_txt.write(str(sorted(retweeted_user.items(), key=operator.itemgetter(1))[::-1]))
-			hashtag_txt = open('hashtag.txt','w+')
+			hashtag_txt = open(lang + '_hashtag.txt','w+')
 			hashtag_txt.write('Hashtags\n\n')
 			hashtag_txt.write('# hashtag = { hashtag : number }\n\n')
 			hashtag_txt.write(str(sorted(hashtag.items(), key=operator.itemgetter(1))[::-1]))
-			language_tweet_txt = open('language_tweet.txt','w+')
-			language_tweet_txt.write('Tweets language\n\n')
-			language_tweet_txt.write('# language_tweet = { language : number_of_tweet }\n\n')
-			language_tweet_txt.write(str(sorted(language_dictionary.items(), key=operator.itemgetter(1))[::-1]))
+			if args.tlang == 'all':
+				volume_creation_txt = open(lang + '_volume_creation.txt','w+')
+				volume_creation_txt.write('Created accounts by month\n\n')
+				volume_creation_txt.write('# volume_creation = { year : { month : number_of_created_accounts } }\n\n')
+				volume_creation_txt.write(str(sorted(volume_creation.items(), key=operator.itemgetter(0))))
+				language_tweet_txt = open(lang + '_language_tweet.txt','w+')
+				language_tweet_txt.write('Tweets language\n\n')
+				language_tweet_txt.write('# language_tweet = { language : number_of_tweet }\n\n')
+				language_tweet_txt.write(str(sorted(language_dictionary.items(), key=operator.itemgetter(1))[::-1]))
 	else:
 		print('\x1b[1;39;49m' + 'This language is not in the dataset' + '\x1b[0m')
 	print('\x1b[1;39;49m' + 'Done!' + '\x1b[0m')
