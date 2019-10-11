@@ -29,7 +29,8 @@ optional arguments:
   --index INDEX         number of rows of each splitted CSV files
   --tlang TLANG         language of tweets to analyse
   --ulang ULANG         language of accounts to analyse
-  -w                    large wordclouds are slow to build, so active this parameter only if you are patient
+  -w                    large wordclouds are slow to build, so 
+                        active this parameter only if you are patient
   -csv                  save info into csv files
   -txt                  save all details into txt files
   -v                    verbose mode
