@@ -13,6 +13,7 @@ import operator
 import re
 import csv
 import langcodes
+import time
 
 from wordcloud import WordCloud
 from PIL import Image
@@ -49,7 +50,7 @@ language_dictionary = {}
 # It is a only a counter
 account_count = []
 
-def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count):
+def tweet_analysis(language_tweet, language_user, verbose, path_csv, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count):
 	data = pd.read_csv(path_csv, header=0, low_memory=False)
 	user_screen_name = list(data.user_screen_name)
 	account_creation_date = list(data.account_creation_date)
@@ -142,6 +143,8 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 						hashtag[str(element)] = 1
 
 	i = 0
+	if verbose == True:
+		print('\x1b[1;39;49m' + 'Analysing the dataset {}, be patient...'.format(path_csv.split('/')[-1]) + '\x1b[0m')	
 	while i < len(user_screen_name):
 		if language_tweet != 'all':
 			if str(tweet_language[i]) == language_tweet:
@@ -151,6 +154,11 @@ def tweet_analysis(language_tweet, language_user, path_csv, volume_tweet, daily_
 				tweet_data()
 		else:
 			tweet_data()
+		if verbose == True:
+			if i%100000 == 0 and i != 0:
+				print('\x1b[1;39;49m' + 'Analysed {} tweets'.format(i) + '\x1b[0m')
+			if i == len(user_screen_name) - 1:
+				print('\x1b[1;39;49m' + 'Analysed {} tweets'.format(i+1) + '\x1b[0m')				
 		i += 1
 
 	if volume_tweet != {}:
@@ -303,31 +311,122 @@ def wordcloud(words, language, gradient, title):
 	plt.savefig(language + '_' + title + '.png')
 	plt.close()
 
+def split(filename, dirname, number, v):
+	if v == True:
+		print('\x1b[1;39;49m' + 'Splitting the dataset, be patient...' + '\x1b[0m')
+	cost = number
+	first_line = ''
+	k = 1
+	i = number
+	while (i == cost):
+		with open(filename, newline='') as csvfilename:
+			reader = csv.reader(csvfilename, delimiter=',', quotechar='"')
+			i = 0
+			allrows = []
+			j = 0
+			for row in reader:
+				if i == number:
+					break
+				else:
+					if j >= (k-1)*number:
+						if first_line == '':
+							first_line = row
+						else:
+							allrows.append(row)
+						i += 1
+				j += 1
+
+		f = open(dirname + '/' + str(filename.split('/')[-1])+ str(k) + '.csv', 'w+', newline='')
+		csvwriter = csv.writer(f)
+		csvwriter.writerow(first_line)
+		csvwriter.writerows(allrows)
+		if v == True:
+			if i == number:
+				print('\x1b[1;39;49m' + 'Loading {} tweets'.format(k*number) + '\x1b[0m')
+			else:
+				print('\x1b[1;39;49m' + 'Loading {} tweets'.format((k-1)*number+i) + '\x1b[0m')
+		k += 1
+
 parser = argparse.ArgumentParser(description='Twitter dataset tweets\' analysis')
-parser.add_argument('--path', nargs='*', help='Path of Twitter dataset')
 group = parser.add_mutually_exclusive_group()
-group.add_argument('--tlang', default='all', help='Language of tweets to analyse')
-group.add_argument('--ulang', default='all', help='Language of accounts to analyse')
+group.add_argument('--path', nargs='*', help='Path of Twitter dataset')
+group.add_argument('--dirpath', help='Path of the dir cotaining Twitter dataset(s)')
+group.add_argument('--split', nargs='*', help='Split a CSV file in smaller CSV files, it can be slow')
+parser.add_argument('--index', required=False, type=int, default=1000000, help='Number of rows of splitted CSV files')
+group1 = parser.add_mutually_exclusive_group()
+group1.add_argument('--tlang', default='all', help='Language of tweets to analyse')
+group1.add_argument('--ulang', default='all', help='Language of accounts to analyse')
 parser.add_argument('-w', required=False, action='store_true', help='Large wordclouds are slow to build, so active this parameter only if you are patient')
 parser.add_argument('-csv', required=False, action='store_true', help='Save info into csv files')
 parser.add_argument('-txt', required=False, action='store_true', help='Save all details into txt files')
+parser.add_argument('-v', required=False, action='store_true', help='Verbose mode')
 args = parser.parse_args()
 try:
 	print("\x1b[1;34;49m" + "\n\n                 ./oss+:    -\n /d:           .hMMMMMMMNydm/`\n hMMd+`       `NMMMMMMMMMMNdy-\n /MMMMMds/-`  /MMMMMMMMMMMN-         \n .+mMMMMMMMMNmmMMMMMMMMMMMm\n sMNMMMMMMMMMMMMMMMMMMMMMMs\n  sMMMMMMMMMMMMMMMMMMMMMMN.\n   -smMMMMMMMMMMMMMMMMMMM/\n   .dMMMMMMMMMMMMMMMMMMN:\n     :ydNMMMMMMMMMMMMMh.\n     `:omMMMMMMMMMMMy-\n./ymNMMMMMMMMMMMmy/`\n   `-/+ssssso/-`\n" + "\x1b[0m")
 	print("\x1b[1;39;49m" + "  Made with" + "\x1b[0m" + "\x1b[1;31;49m" + " ❤" + "\x1b[0m" + "\x1b[1;39;49m" + " - https://www.github.com/luigigubello" + "\x1b[0m\n\n")
 	print('\x1b[1;39;49m' + 'Wait...' + '\x1b[0m')
-	for item in args.path:
-		vector = tweet_analysis(args.tlang, args.ulang, item, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count)
-		volume_tweet = vector[0]
-		daily_rhytm = vector[1]
-		volume_creation = vector[2]
-		user_agent = vector[3]
-		retweeted_user = vector[4]
-		hashtag = vector[5]
-		language_dictionary = vector[6]
-		account_count = vector[7]
+	if args.dirpath is not None:
+		pwd = os.path.abspath(os.path.dirname(sys.argv[0]))
+		if not os.path.exists(pwd + '/' + args.dirpath) and not os.path.exists(args.dirpath):
+			print('\x1b[1;39;49m' + 'One or more files don\'t exist, check the path.' + '\x1b[0m')
+			exit(0)
+		else:
+			if os.path.exists(pwd + '/' + args.dirpath) == True:
+				fulldirname = pwd + '/' + args.dirpath
+			else:
+				fulldirname = args.dirpath
+			list_csv = os.listdir(fulldirname)
+			for item in list_csv:
+				vector = tweet_analysis(args.tlang, args.ulang, args.v, fulldirname + '/' + item, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count)
+				volume_tweet = vector[0]
+				daily_rhytm = vector[1]
+				volume_creation = vector[2]
+				user_agent = vector[3]
+				retweeted_user = vector[4]
+				hashtag = vector[5]
+				language_dictionary = vector[6]
+				account_count = vector[7]
+	if args.split is not None:
+		pwd = os.path.abspath(os.path.dirname(sys.argv[0]))
+		fulldirname = pwd + '/data_' + str(int(time.mktime(datetime.datetime.now().timetuple())))
+		os.makedirs(fulldirname)
+		for item in args.split:
+			if not os.path.exists(pwd + '/' + item) and not os.path.exists(item):
+				print('\x1b[1;39;49m' + 'One or more files don\'t exist, check the path.' + '\x1b[0m')	
+				exit(0)
+		for element in args.split:
+			split(element, fulldirname, args.index, args.v)
+		list_csv = os.listdir(fulldirname)
+		for item in list_csv:
+			vector = tweet_analysis(args.tlang, args.ulang, args.v, fulldirname + '/' + item, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count)
+			volume_tweet = vector[0]
+			daily_rhytm = vector[1]
+			volume_creation = vector[2]
+			user_agent = vector[3]
+			retweeted_user = vector[4]
+			hashtag = vector[5]
+			language_dictionary = vector[6]
+			account_count = vector[7]
+	if args.path is not None:
+		pwd = os.path.abspath(os.path.dirname(sys.argv[0]))
+		for item in args.path:
+			if not os.path.exists(pwd + '/' + item) and not os.path.exists(item):
+				print('\x1b[1;39;49m' + 'One or more files don\'t exist, check the path.' + '\x1b[0m')	
+				exit(0)
+		for item in args.path:	
+			vector = tweet_analysis(args.tlang, args.ulang, args.v, item, volume_tweet, daily_rhytm, volume_creation, user_agent, retweeted_user, hashtag, language_dictionary, account_count)
+			volume_tweet = vector[0]
+			daily_rhytm = vector[1]
+			volume_creation = vector[2]
+			user_agent = vector[3]
+			retweeted_user = vector[4]
+			hashtag = vector[5]
+			language_dictionary = vector[6]
+			account_count = vector[7]
 
 	if volume_tweet != {}:
+		if args.v == True:
+			print('\x1b[1;39;49m' + 'Creating the graphs, the end is near!' + '\x1b[0m')
 		lang = ''
 		if args.tlang != 'all':
 			lang = args.tlang
@@ -339,9 +438,12 @@ try:
 		if args.tlang == 'all':
 			creation_plot(volume_creation, lang)
 		barplot(user_agent, lang, 'Twitter clients', 'user_agent')
-		barplot(language_dictionary, lang, 'Tweets languages', 'tweets_language')
+		if args.tlang == 'all':
+			barplot(language_dictionary, lang, 'Tweets languages', 'tweets_language')
 		
 		if args.w == True:
+			if args.v == True:
+				print('\x1b[1;39;49m' + 'Creating the wordclouds, it is slow, be very patient...' + '\x1b[0m')
 			wordcloud(retweeted_user, lang, 'winter', 'retweeted_user')
 			wordcloud(hashtag, lang, 'tab10', 'hashtag')
 		
@@ -392,32 +494,32 @@ try:
 		
 		if args.txt == True:
 			volume_tweet_interaction_txt = open('volume_tweet_interaction.txt','w+')
-			volume_tweet_interaction_txt.write('Volume of tweets and interactions\n')
-			volume_tweet_interaction_txt.write('# volume_tweet = { year : { month : [number_of_tweets, number_of_retweets, replies, hearts, retweets, quotes] } }\n')
+			volume_tweet_interaction_txt.write('Volume of tweets and interactions\n\n')
+			volume_tweet_interaction_txt.write('# volume_tweet = { year : { month : [number_of_tweets, number_of_retweets, replies, hearts, retweets, quotes] } }\n\n')
 			volume_tweet_interaction_txt.write(str(sorted(volume_tweet.items(), key=operator.itemgetter(0))))
 			daily_rhythm_txt = open('daily_rhythm.txt', 'w+')
-			daily_rhythm_txt.write('Daily rhythm\n')
-			daily_rhythm_txt.write('# daily_rhytm = { day : { hour: number_of_tweets } }\n')
+			daily_rhythm_txt.write('Daily rhythm\n\n')
+			daily_rhythm_txt.write('# daily_rhytm = { day : { hour: number_of_tweets } }\n\n')
 			daily_rhythm_txt.write(str(daily_rhytm))
 			volume_creation_txt = open('volume_creation.txt','w+')
-			volume_creation_txt.write('Created accounts by month\n')
-			volume_creation_txt.write('# volume_creation = { year : { month : number_of_created_accounts } }\n')
+			volume_creation_txt.write('Created accounts by month\n\n')
+			volume_creation_txt.write('# volume_creation = { year : { month : number_of_created_accounts } }\n\n')
 			volume_creation_txt.write(str(sorted(volume_creation.items(), key=operator.itemgetter(0))))
 			user_agent_txt = open('clients.txt','w+')
-			user_agent_txt.write('Twitter clients\n')
-			user_agent_txt.write('# user_agent = { client : number }\n')
+			user_agent_txt.write('Twitter clients\n\n')
+			user_agent_txt.write('# user_agent = { client : number }\n\n')
 			user_agent_txt.write(str(sorted(user_agent.items(), key=operator.itemgetter(1))[::-1]))
 			retweeted_user_txt = open('retweeted_user.txt','w+')
-			retweeted_user_txt.write('Retweeted users\n')
-			retweeted_user_txt.write('# retweeted_user = { retweeted user : number }\n')
+			retweeted_user_txt.write('Retweeted users\n\n')
+			retweeted_user_txt.write('# retweeted_user = { retweeted user : number }\n\n')
 			retweeted_user_txt.write(str(sorted(retweeted_user.items(), key=operator.itemgetter(1))[::-1]))
 			hashtag_txt = open('hashtag.txt','w+')
-			hashtag_txt.write('Hashtags\n')
-			hashtag_txt.write('# hashtag = { hashtag : number }\n')
+			hashtag_txt.write('Hashtags\n\n')
+			hashtag_txt.write('# hashtag = { hashtag : number }\n\n')
 			hashtag_txt.write(str(sorted(hashtag.items(), key=operator.itemgetter(1))[::-1]))
 			language_tweet_txt = open('language_tweet.txt','w+')
-			language_tweet_txt.write('Tweets language\n')
-			language_tweet_txt.write('# language_tweet = { language : number_of_tweet }\n')
+			language_tweet_txt.write('Tweets language\n\n')
+			language_tweet_txt.write('# language_tweet = { language : number_of_tweet }\n\n')
 			language_tweet_txt.write(str(sorted(language_dictionary.items(), key=operator.itemgetter(1))[::-1]))
 	else:
 		print('\x1b[1;39;49m' + 'This language is not in the dataset' + '\x1b[0m')
