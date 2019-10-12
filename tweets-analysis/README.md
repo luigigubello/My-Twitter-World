@@ -11,26 +11,27 @@ The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
 
 ```
 usage: tweets_analysis.py [-h]
-                          (--path [PATH [PATH ...]] | --dirpath DIRPATH | --split [SPLIT [SPLIT ...]])
-                          [--index INDEX] [--tlang TLANG | --ulang ULANG]
-                          [-w] [-csv] [-txt] [-v]
+                           (--path [PATH [PATH ...]] | --dirpath DIRPATH | --split [SPLIT [SPLIT ...]])
+                           [--index INDEX] [--tlang TLANG | --ulang ULANG]
+                           [-w] [-top] [-csv] [-txt] [-v]
 
 Twitter disinformation datasets' analysis
 
-required arguments:
-  --path [PATH [PATH ...]]
-                        path of Twitter dataset
-  --dirpath DIRPATH     path of the directory cotaining Twitter dataset(s)
-  --split [SPLIT [SPLIT ...]]
-                          split a CSV file in smaller CSV files, it can be slow
-
 optional arguments:
   -h, --help            show this help message and exit
-  --index INDEX         number of rows of each splitted CSV files
-  --tlang TLANG         language of tweets to analyse
-  --ulang ULANG         language of accounts to analyse
-  -w                    large wordclouds are slow to build, so 
-                        active this parameter only if you are patient
+  --path [PATH [PATH ...]]
+                        path of Twitter dataset
+  --dirpath DIRPATH     path of the directory containing Twitter dataset(s)
+  --split [SPLIT [SPLIT ...]]
+                        split a CSV file in smaller CSV files, it can be slow
+  --index INDEX         number of rows of each splitted CSV files [default:
+                        --index=1000000]
+  --tlang TLANG         language of tweets to analyse [default: --tlang=all]
+  --ulang ULANG         language of accounts to analyse [default: --ulang=all]
+  -w                    large wordclouds are slow to build, so active this
+                        parameter only if you are patient
+  -top                  generate wordclouds with at most the 100 most frequent
+                        words, saving your time
   -csv                  save info into csv files
   -txt                  save all details into txt files
   -v                    verbose mode
