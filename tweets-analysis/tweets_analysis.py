@@ -299,12 +299,16 @@ def barplot(dictionary, language, x_label, title, titleplot):
 	plt.savefig(language + '_' + title + '.png', bbox_inches='tight', dpi=200)
 	plt.close()
 
-def wordcloud(words, language, gradient, title, titleplot):
+def wordcloud(words, language, gradient, title, titleplot, partial):
 	twitter_mask = np.array(Image.open('twitter_mask.png'))
+	sorted_words = sorted(words.items(), key=operator.itemgetter(1))[::-1]
 	text = ''
-	for key in words:
-		for item in range(words[key]):
-			text = text + str(key) + ' '
+	if partial == True and len(sorted_words) > 100:
+		sorted_words = sorted_words[:100]
+		titleplot = titleplot + ' - Top 100'
+	for item in sorted_words:
+		for num in range(item[1]):
+			text = text + str(item[0]) + ' '
 	if gradient == 'winter':
 		wordcloud = WordCloud(mask=twitter_mask, colormap=matplotlib.cm.winter, background_color="white", collocations=False).generate(text)
 	else:
@@ -356,13 +360,14 @@ def split(filename, dirname, number, v):
 parser = argparse.ArgumentParser(description='Twitter disinformation datasets\' analysis')
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--path', nargs='*', help='path of Twitter dataset')
-group.add_argument('--dirpath', help='path of the directory cotaining Twitter dataset(s)')
+group.add_argument('--dirpath', help='path of the directory containing Twitter dataset(s)')
 group.add_argument('--split', nargs='*', help='split a CSV file in smaller CSV files, it can be slow')
-parser.add_argument('--index', required=False, type=int, default=1000000, help='number of rows of each splitted CSV files')
+parser.add_argument('--index', required=False, type=int, default=1000000, help='number of rows of each splitted CSV files [default: --index=1000000')
 group1 = parser.add_mutually_exclusive_group()
-group1.add_argument('--tlang', default='all', help='language of tweets to analyse')
-group1.add_argument('--ulang', default='all', help='language of accounts to analyse')
+group1.add_argument('--tlang', default='all', help='language of tweets to analyse [default: --tlang=all]')
+group1.add_argument('--ulang', default='all', help='language of accounts to analyse [default: --ulang=all]')
 parser.add_argument('-w', required=False, action='store_true', help='large wordclouds are slow to build, so active this parameter only if you are patient')
+parser.add_argument('-top', required=False, action='store_true', help='generate wordclouds with at most the 100 most frequent words, saving your time')
 parser.add_argument('-csv', required=False, action='store_true', help='save info into csv files')
 parser.add_argument('-txt', required=False, action='store_true', help='save all details into txt files')
 parser.add_argument('-v', required=False, action='store_true', help='verbose mode')
@@ -477,10 +482,12 @@ try:
 		if args.w == True:
 			if args.v == True:
 				print('\x1b[1;39;49m' + 'Creating the wordclouds, it is slow, be very patient...' + '\x1b[0m')
-			wordcloud(retweeted_user, lang, 'winter', 'retweeted_user', titleplot_retweeted_user)
-			wordcloud(hashtag, lang, 'tab10', 'hashtag', titleplot_hashtag)
+			wordcloud(retweeted_user, lang, 'winter', 'retweeted_user', titleplot_retweeted_user, args.top)
+			wordcloud(hashtag, lang, 'tab10', 'hashtag', titleplot_hashtag, args.top)
 		
 		if args.csv == True:
+			if args.v == True:
+				print('\x1b[1;39;49m' + 'Creating CSV files' + '\x1b[0m')
 			sorted_volume = sorted(volume_tweet.items(), key=operator.itemgetter(0))
 			with open('volume.csv','wt') as out:
 				csv_out=csv.writer(out)
@@ -527,6 +534,8 @@ try:
 						csv_out.writerow(item)
 		
 		if args.txt == True:
+			if args.v == True:
+				print('\x1b[1;39;49m' + 'Creating text files' + '\x1b[0m')
 			volume_tweet_interaction_txt = open(lang + '_volume_tweet_interaction.txt','w+')
 			volume_tweet_interaction_txt.write('Volume of tweets and interactions\n\n')
 			volume_tweet_interaction_txt.write('# volume_tweet = { year : { month : [number_of_tweets, number_of_retweets, replies, hearts, retweets, quotes] } }\n\n')
