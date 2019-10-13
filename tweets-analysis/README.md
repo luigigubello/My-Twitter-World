@@ -56,7 +56,7 @@ Mergering and analysing the datasets *china_082019_1_tweets_csv_hashed.csv* and 
 
 or
 
-`python3 tweets_analysis2.py --dirpath /path/of/your/CSV/files`
+`python3 tweets_analysis.py --dirpath /path/of/your/CSV/files`
 
 If a dataset is too large you can use the argument ``--split`` to split the CSV file into smaller CSV files. The argument ``--split`` can accept multiple files to split. You can also choose the number of rows of each splitted file by using the optinal argument ``--index NUMBER``, the default value is `1000000`.
 
@@ -83,7 +83,7 @@ By setting the arguments `-csv` and/or `-txt` you can save all data analysed by 
 
 Analysing all tweets in the dataset *spain_082019_tweets_csv_hashed.csv* and saving data in CSV files and text files.
 
-`$ python3 tweets_analysis2.py --path spain_082019_tweets_csv_hashed.csv -w -top -csv -txt -v`
+`$ python3 tweets_analysis.py --path spain_082019_tweets_csv_hashed.csv -w -top -csv -txt -v`
 
 ### 📊 How to read the graphs
 
