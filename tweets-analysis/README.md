@@ -6,6 +6,7 @@
 
 Twitter [are continuing to release datasets](https://blog.twitter.com/en_us/topics/company/2019/info-ops-disclosure-data-september-2019.html) about disinformation campaigns on the social network. The CSV files of these datasets have always the same structure, so I have written a little script to create some graphs to better understand the data. I have used this code [in my analysis](https://www.gubello.me/blog/about-iran-and-ira-twitter-datasets-for-fun-part-iii/) about Internet Research Agency propaganda.</br>
 The script is tested on **Ubuntu 19.04** with **Python 3.7.3**.</br>
+⚠️ **Important:** there is a [bug](https://stackoverflow.com/a/58165593) in Matplotlib 3.1.1, so you have to use Matplotlib < 3.1.1.</br>
 
 If you want to support me you can offer me a coffee ☕</br></br>
 <a href="https://www.buymeacoffee.com/gubello" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
