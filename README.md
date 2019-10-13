@@ -4,7 +4,10 @@
 
 ### ℹ️ About
 
-During the last year I have found out the Twitter API, so I have written some Python code to collect and analyze data. I also have extracted data and numbers from the datasets about propaganda and disinformation shared by Twitter. I will upload on Github all the code I have written, I am not a Python developer so the code is not so good, but it works. I hope these Python scripts can also be useful to others.
+During the last year I have found out the Twitter API, so I have written some Python code to collect and analyze data. I also have extracted data and numbers from the datasets about propaganda and disinformation shared by Twitter. I will upload on Github all the code I have written, I am not a Python developer so the code is not so good, but it works. I hope these Python scripts can also be useful to others.</br>
+
+If you want to support me you can offer me a coffee ☕</br></br>
+<a href="https://www.buymeacoffee.com/gubello" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
 
 ### 🔗 Some posts on my blog about Twitter data analysis:
 
