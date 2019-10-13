@@ -7,7 +7,11 @@
 
 In August, 2019, Twitter have published a large dataset - splitted in two CSV files - about a [_state-backed information operation focused on the situation in Hong Kong_](https://blog.twitter.com/en_us/topics/company/2019/information_operations_directed_at_Hong_Kong.html). This is a important data collection about a new state: China. The first analysis shows many differences between this dataset and the Internet Research Agency one, but there is a particular difference between these two datasets: how Twitter have built them.
 
-In the Internet Research Agency dataset there are all the accounts of the Russian network, and the privacy of each account with less than 5000 followers is protected by an hash. Moreover Twitter have published an archive of all multimedia files shared by Internet Research Agency accounts. _The dataset about Hong Kong disinformation seems to have been built faster_, there are 936 accounts but Twitter have suspended 200.000 accounts circa, so many quoted accounts in the dataset's tweets are suspended but we have no information about them. Also we haven no information about the multimedia files shared by these accounts. Another difference is the column **user_mentions** where no user ID is hashed, so it is possible to associate some hashes with some user IDs.
+In the Internet Research Agency dataset there are all the accounts of the Russian network, and the privacy of each account with less than 5000 followers is protected by an hash. Moreover Twitter have published an archive of all multimedia files shared by Internet Research Agency accounts. _The dataset about Hong Kong disinformation seems to have been built faster_, there are 936 accounts but Twitter have suspended 200.000 accounts circa, so many quoted accounts in the dataset's tweets are suspended but we have no information about them. Also we haven no information about the multimedia files shared by these accounts. Another difference is the column **user_mentions** where no user ID is hashed, so it is possible to associate some hashes with some user IDs.</br>
+
+If you want to support me you can offer me a coffee ☕</br></br>
+<a href="https://www.buymeacoffee.com/gubello" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 
 ### ⚙️ How To Use
 
