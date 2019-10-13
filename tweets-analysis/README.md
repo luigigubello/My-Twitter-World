@@ -75,7 +75,7 @@ Analysing all the tweets in the dataset *china_082019_1_tweets_csv_hashed.csv* w
 `$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --upath en`
 
 Setting the argument `--tlang LANG` the script generates four graphs: *LANG tweets volume by month*, *LANG tweets interactions volume by month*, *LANG tweets daily rhythm* and *Twitter clients used to write LANG tweets*.</br>
-Setting the argument `--ulang LANG` the script generates six graphs: *Tweets volume of LANG accounts by month*, *Interactions with LANG accounts - Volume by month*,*LANG accounts daily rhythm*, *Number of created LANG accounts by month*, *Twitter clients used by LANG accounts* and *Languages of tweets written by LANG accounts*.</br>
+Setting the argument `--ulang LANG` the script generates six graphs: *Tweets volume of LANG accounts by month*, *Interactions with LANG accounts - Volume by month*, *LANG accounts daily rhythm*, *Number of created LANG accounts by month*, *Twitter clients used by LANG accounts* and *Languages of tweets written by LANG accounts*.</br>
 The optional argument `-w` generates two wordclouds (*the most frequent retweeted users* and *the most frequent hashtags*), but this process is **very slow**. You can save your time by using the arguments `-w -top`, so in the wordclouds there will be at most the 100 most frequent words.</br>
 By setting the arguments `-csv` and/or `-txt` you can save all data analysed by the script to create the graphs in handy CSV files and text files.
 
