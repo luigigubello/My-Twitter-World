@@ -5,7 +5,11 @@
 ### ℹ️ About
 
 **`ŧwitter_search.py`** is a little Python script to collect Twitter data into a CSV file. The script finds the tweets or retweets with particular hashtags or keyworlds and collect the data via Twitter API, until 7000 tweets/hour circa. So you have to have your own Twitter API keys (tokens) to use it.
-The script is tested on **Ubuntu 18.04** with **Python 3.6.8**.
+The script is tested on **Ubuntu 18.04** with **Python 3.6.8**.</br>
+
+If you want to support me you can offer me a coffee ☕</br></br>
+<a href="https://www.buymeacoffee.com/gubello" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 
 ### ⚙️ How To Use
 
