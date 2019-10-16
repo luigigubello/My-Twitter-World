@@ -14,36 +14,26 @@ If you want to support me you can offer me a coffee ☕</br></br>
 ### ⚙️ How To Use
 
 ```
-usage: tweets_analysis.py [-h]
-                           (--path [PATH [PATH ...]] | --dirpath DIRPATH | --split [SPLIT [SPLIT ...]])
-                           [--index INDEX] [--tlang TLANG | --ulang ULANG]
-                           [-w] [-top] [-csv] [-txt] [-v]
+Usage: tweet-analysis.py [OPTIONS]
 
-Twitter disinformation datasets' analysis
+Options:
+  --path TEXT   Path of the Twitter Dataset. Can be a single CSV file or a
+                directory containing multiple CSVs  [required]
+  -w            Include WordCloud in the analysis.
+  --user TEXT   Optional argument. Run the analysis only for the selected user
+  --tlang TEXT  Optional argument. Language of tweets to analyze
+  --ulang TEXT  Optional argument. Language of accounts to analyze
+  -v            Optional argument. Verbose mode that print more information
+  --help        Show this message and exit.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --path [PATH [PATH ...]]
-                        path of Twitter dataset
-  --dirpath DIRPATH     path of the directory containing Twitter dataset(s)
-  --split [SPLIT [SPLIT ...]]
-                        split a CSV file in smaller CSV files, it can be slow
-  --index INDEX         number of rows of each splitted CSV files [default:
-                        --index=1000000]
-  --tlang TLANG         language of tweets to analyse [default: --tlang=all]
-  --ulang ULANG         language of accounts to analyse [default: --ulang=all]
-  -w                    large wordclouds are slow to build, so active this
-                        parameter only if you are patient
-  -top                  generate wordclouds with at most the 100 most frequent
-                        words, saving your time
-  -csv                  save info into csv files
-  -txt                  save all details into txt files
-  -v                    verbose mode
   ```
 
 ### 📝 Examples
 
-The script requires one of the following arguments `--path`, `--dirpath` or `--split`. To analyse a dataset you can use the arguments `--path`, if you want to merge two or more CSV files you can use the arguments `--path` by writing multiple file paths or `--dirpath` by writing the directory path where there are all the CSV files.
+The script requires only the `--path` argument. You can pass either a single CSV file, or a folder (in which case, all the CSV inside will be read and concatenated for the analysis)
+
+# Important
+The rest of the documentation should be updated
 
 ##### Example
 
