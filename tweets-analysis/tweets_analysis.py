@@ -4,6 +4,7 @@ import time
 import functools
 from datetime import datetime
 from ast import literal_eval
+from itertools import chain
 
 from memory_profiler import profile
 
@@ -65,7 +66,7 @@ def find_csv(path):
 
 @timer
 # @profile
-def read_list_of_csv(fname_list):
+def read_list_of_csv(fname_list, chunksize):
     df_list = []
     # to read a list of files: create a list with one DataFrame per single file, then use pd.concat on the list
     for f in fname_list:
@@ -88,14 +89,14 @@ def read_list_of_csv(fname_list):
                 'retweet_count': np.float32,
                 'reply_count': np.float32
             },
+            iterator=True,
+            chunksize=chunksize
             # converters={'hashtags': literal_eval}  # lambda x: x.strip("[]").split(", ")}
         ))
 
-    # this is the concatenated Twitter dataset
-    tw_df = pd.concat(df_list, ignore_index=True)
-    tw_df = tw_df.drop_duplicates()  # this is to manage if there accidental copies of the same CSV in the folder
+    df_iter = chain.from_iterable(df_list)
 
-    return tw_df
+    return df_iter
 
 
 @timer
@@ -164,7 +165,7 @@ def extend_month_year_values(df, for_chart):
     return df
 
 
-def plot_density(df, title_prefix, fname_prefix, results_folder):
+def create_heatmap_df(df):
     # group by hour and weekday and count the number of tweets in each group
     heatmap_df = df.groupby(['hour', 'weekday'], observed=True).size().reset_index().rename(columns={0: 'n_tweets'})
 
@@ -174,16 +175,19 @@ def plot_density(df, title_prefix, fname_prefix, results_folder):
         categories=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         ordered=True)
 
-    # plot
+    return heatmap_df
+
+
+def plot_density(heatmap_df, title_prefix, fname_prefix, results_folder):
     plt.figure(figsize=(10, 5))
     sns.heatmap(heatmap_df.pivot('weekday', 'hour', 'n_tweets').fillna(0), annot=False,
                 linewidths=.5)  # pivot is used to make the DF rectangular
-    plt.title(f"{title_prefix}Tweets daily rhythm", fontsize=15)
+    plt.title(f"{title_prefix} - Tweets daily rhythm", fontsize=15)
     plt.savefig(f'{results_folder}/{fname_prefix}_density.png', bbox_inches='tight', dpi=200)
     plt.close()
 
 
-def plot_tweet_date_list(df, title_prefix, fname_prefix, results_folder):
+def create_tweet_date_list_df(df):
     # group by month_year and is_retweet column and count tweets per group
     # also take first value of tweet_time. it's a utility column that will be only used for ordering
     # in fact, ordering on month_year column does not work because it is now a string, and sorting is based on alphabet, not calendar
@@ -196,7 +200,10 @@ def plot_tweet_date_list(df, title_prefix, fname_prefix, results_folder):
     tweets_per_date = tweets_per_date.sort_values('tweet_time')
     tweets_per_date = extend_month_year_values(tweets_per_date, 'volume')
 
-    # plot
+    return tweets_per_date
+
+
+def plot_tweet_date_list(tweets_per_date, title_prefix, fname_prefix, results_folder):
     plt.figure(figsize=(10, 5))
     tweets_per_date['month_year'] = tweets_per_date['month_year'].astype(str)
     ax = sns.lineplot(data=tweets_per_date, x='month_year', y='n_tweets', hue='is_retweet', sort=False)
@@ -204,12 +211,12 @@ def plot_tweet_date_list(df, title_prefix, fname_prefix, results_folder):
     plt.xticks(rotation=45, fontsize=5)
     # x_ticks = tweets_per_date['month_year'].drop_duplicates().reset_index(drop=True)
     # plt.xticks(np.arange(0, len(x_ticks), 3), x_ticks, rotation=45, fontsize=5)
-    plt.title(f'{title_prefix}Tweets volume', fontsize=10)
+    plt.title(f'{title_prefix} - Tweets volume', fontsize=10)
     plt.savefig(f'{results_folder}/{fname_prefix}_volume_tweet.png', bbox_inches='tight', dpi=250)
     plt.close()
 
 
-def plot_volume_interactions(df, title_prefix, fname_prefix, results_folder):
+def create_interactions_per_date(df):
     # group by month_year and sum all different interactions
     # again, take "tweet_time first" for ordering purposes
     interactions_per_date = df.groupby(['month_year']).agg(
@@ -226,21 +233,29 @@ def plot_volume_interactions(df, title_prefix, fname_prefix, results_folder):
     # see https://seaborn.pydata.org/introduction.html#intro-tidy-data
     interactions_per_date = interactions_per_date.melt(id_vars=['month_year', 'tweet_time'], var_name='interaction')
     interactions_per_date = extend_month_year_values(interactions_per_date, 'interactions')
+    return interactions_per_date
 
+
+def plot_volume_interactions(interactions_per_date, title_prefix, fname_prefix, results_folder):
     plt.figure(figsize=(10, 5))
     ax = sns.lineplot(data=interactions_per_date, x='month_year', y='value', hue='interaction', sort=False)
     # x_ticks = interactions_per_date['month_year'].drop_duplicates().reset_index(drop=True)
     # plt.xticks(np.arange(0, len(x_ticks), 3), x_ticks, rotation=45, fontsize=5)
     ax.xaxis.set_major_locator(ticker.AutoLocator())
     plt.xticks(rotation=45, fontsize=5)
-    plt.title(f'{title_prefix}Volume per interaction', fontsize=10)
+    plt.title(f'{title_prefix} - Volume per interaction', fontsize=10)
     plt.savefig(f'{results_folder}/{fname_prefix}_volume_interactions.png', bbox_inches='tight', dpi=250)
     plt.close()
 
 
-def plot_clients_histogram(df, title_prefix, fname_prefix, results_folder):
+def create_client_histogram(df):
     # this create the whole histogram for each client
     hist = df.groupby('tweet_client_name').size().reset_index().rename(columns={0: '# tweets'})
+    return hist
+
+
+def plot_clients_histogram(hist, title_prefix, fname_prefix, results_folder):
+
     hist = hist.sort_values('# tweets', ascending=False)
     # since the tail it's very long, cut it after 30 elements, and create one last element with "other clients"
     hist_short = hist[:30].copy()
@@ -252,14 +267,18 @@ def plot_clients_histogram(df, title_prefix, fname_prefix, results_folder):
     plt.xticks(rotation='vertical')
     plt.bar(x=hist_short['tweet_client_name'], height=hist_short['# tweets'], color='#2196f3', edgecolor='#64b5f6',
             width=0.5)
-    plt.title(f'{title_prefix}Tweets per client', fontsize=10)
+    plt.title(f'{title_prefix} - Tweets per client', fontsize=10)
     plt.savefig(f'{results_folder}/{fname_prefix}_tweets_per_client.png', bbox_inches='tight', dpi=250)
     plt.close()
 
 
-def plot_lang_histogram(df, title_prefix, fname_prefix, results_folder, remove_undefined_lang=True):
+def create_lang_hist(df):
     # this create the whole histogram for each client
     hist = df.groupby('tweet_language').size().reset_index().rename(columns={0: '# tweets'})
+    return hist
+
+
+def plot_lang_histogram(hist, title_prefix, fname_prefix, results_folder, remove_undefined_lang=True):
     hist = hist.sort_values('# tweets', ascending=False)
     # since the tail it's very long, cut it after 30 elements, and create one last element with "other clients"
     hist_short = hist[:30].copy()
@@ -278,17 +297,17 @@ def plot_lang_histogram(df, title_prefix, fname_prefix, results_folder, remove_u
     plt.xticks(rotation='vertical')
     plt.bar(x=hist_short['tweet_language'], height=hist_short['# tweets'], color='#2196f3', edgecolor='#64b5f6',
             width=0.5)
-    plt.title(f'{title_prefix}Tweets per language', fontsize=10)
+    plt.title(f'{title_prefix} - Tweets per language', fontsize=10)
     plt.savefig(f'{results_folder}/{fname_prefix}_tweets_per_lang.png', bbox_inches='tight', dpi=250)
     plt.close()
 
 
-def plot_accounts_created(df, title_prefix, fname_prefix, results_folder):
-
+def create_accounts_created_df(df):
     # get unique users and their account_creation_date
     account_per_date = df.groupby(['account_creation_date'])['user_screen_name'].nunique().reset_index()
 
-    account_per_date['month_year_account'] = account_per_date['account_creation_date'].dt.month_name().str[:3] + ' ' + account_per_date['account_creation_date'].dt.year.astype(str)
+    account_per_date['month_year_account'] = account_per_date['account_creation_date'].dt.month_name().str[:3] + ' ' + \
+                                             account_per_date['account_creation_date'].dt.year.astype(str)
 
     account_per_date = account_per_date.groupby('month_year_account').sum()
 
@@ -298,27 +317,34 @@ def plot_accounts_created(df, title_prefix, fname_prefix, results_folder):
         '%b %Y')
 
     account_per_date = account_per_date.reindex(month_year_extended).fillna(0)
+    return account_per_date
 
-    # plot
+
+def plot_accounts_created(accounts_per_date, title_prefix, fname_prefix, results_folder):
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot()
     ax.xaxis.set_major_locator(ticker.AutoLocator())
-    plt.bar(x=account_per_date.index, height=account_per_date['user_screen_name'])
+    plt.bar(x=accounts_per_date.index, height=accounts_per_date['user_screen_name'])
     plt.xticks(rotation=45, fontsize=5)
-    plt.title(f'{title_prefix}Accounts created per month', fontsize=10)
+    plt.title(f'{title_prefix} - Accounts created per month', fontsize=10)
     plt.savefig(f'{results_folder}/{fname_prefix}_accounts_created.png', bbox_inches='tight', dpi=250)
     plt.close()
 
 
-def plot_retweet_wordcloud(df, title_prefix, fname_prefix, results_folder, colormap=matplotlib.cm.winter):
-    twitter_mask = np.array(Image.open('twitter_mask.png'))
-
+def create_text_for_retweet_wordcloud(df):
     # first, only select retweets
     df = df.loc[df['is_retweet']]
     # create new column by extracting the "RT xxx:" substring with a regular expression
     df['rtw_extraction'] = df['tweet_text'].str.extract(r'(RT @[a-zA-Z-_\d]+:)')
     # create big text by concatenating all users extracted from the column "tweet_text" in a single string
     text = ' '.join([str(v)[4:-1] for v in df['rtw_extraction']])
+
+    return text
+
+
+def plot_retweet_wordcloud(text, title_prefix, fname_prefix, results_folder, colormap=matplotlib.cm.winter):
+    twitter_mask = np.array(Image.open('twitter_mask.png'))
+
     wcloud = WordCloud(background_color="white", colormap=colormap, collocations=False, mask=twitter_mask).generate(
         text)
 
@@ -332,13 +358,17 @@ def plot_retweet_wordcloud(df, title_prefix, fname_prefix, results_folder, color
     plt.close()
 
 
-def plot_hashtag_wordcloud(df, title_prefix, fname_prefix, results_folder, colormap=matplotlib.cm.winter):
-    twitter_mask = np.array(Image.open('twitter_mask.png'))
-
+def create_text_for_htag_wordcloud(df):
     hashtag_list = clean_hashtags(df)
 
     # create big text by concatenating all users extracted from the column "tweet_text" in a single string
     text = ' '.join(hashtag_list)
+
+    return text
+
+
+def plot_hashtag_wordcloud(text, title_prefix, fname_prefix, results_folder, colormap=matplotlib.cm.winter):
+    twitter_mask = np.array(Image.open('twitter_mask.png'))
     wcloud = WordCloud(background_color="white", colormap=colormap, collocations=False, mask=twitter_mask).generate(
         text)
 
@@ -352,6 +382,19 @@ def plot_hashtag_wordcloud(df, title_prefix, fname_prefix, results_folder, color
     plt.close()
 
 
+def filter_df_from_args(df, user, tlang, ulang):
+    if user is not None:
+        df = df.loc[df['user_screen_name'] == user]
+
+    if tlang is not None:
+        df = df.loc[df['tweet_language'] == tlang]
+
+    if ulang is not None:
+        df = df.loc[df['account_language'] == ulang]
+
+    return df
+
+
 @click.command()
 @click.option('--path', help='Path of the Twitter Dataset. Can be a single CSV file '
                              'or a directory containing multiple CSVs', required=True)
@@ -360,11 +403,17 @@ def plot_hashtag_wordcloud(df, title_prefix, fname_prefix, results_folder, color
 @click.option('--tlang', help='Optional argument. Language of tweets to analyze', required=False)
 @click.option('--ulang', help='Optional argument. Language of accounts to analyze', required=False)
 @click.option('-v', help='Optional argument. Verbose mode that print more information', required=False, is_flag=True)
+@click.option('--split', help='Split the analysis in chunks. For low-memory devices', required=False, is_flag=True)
 @timer
-def run_analysis(path, w, user, tlang, ulang, v):
+def run_analysis(path, w, user, tlang, ulang, v, split):
     if v:
         global VERBOSE
         VERBOSE = True
+
+    if split:
+        chunksize = 1000000
+    else:
+        chunksize = None
 
     # first, let's read the path and find the file(s)
     csv_fnames = find_csv(path)
@@ -372,62 +421,87 @@ def run_analysis(path, w, user, tlang, ulang, v):
     for fn in csv_fnames:
         print(fn)
     print('Reading files...')
-    tw_df = read_list_of_csv(csv_fnames)
-    if VERBOSE:
-        print(tw_df.info())
+    tw_df = read_list_of_csv(csv_fnames, chunksize=chunksize)
+    rows_analysed = 0
 
-    print(f'Analysing {len(tw_df)} tweets...')
+    heatmap_df = []
+    tweets_per_date = []
+    interactions_per_date = []
+    client_hist = []
+    lang_hist = []
+    accounts_per_date = []
+    retweets_wcloud_text = []
+    htag_wcloud_text = []
+    for df in tw_df:
 
-    # filter user, if argument --user is set
-    if user is not None:
-        tw_df = tw_df.loc[tw_df['user_screen_name'] == user]
-    else:
+        rows_analysed += len(df)
+
+        # filter user
+        df = filter_df_from_args(df, user, tlang, ulang)
+
+        print(f'Analyzed {rows_analysed} tweets')
+
+        # after the filters on user and language, check that the DF is not empty
+        if len(df) == 0:
+            continue
+
+        df = extract_datetime_feature(df)
+
+        heatmap_df.append(create_heatmap_df(df))
+        tweets_per_date.append(create_tweet_date_list_df(df))
+        interactions_per_date.append(create_interactions_per_date(df))
+        client_hist.append(create_client_histogram(df))
+        lang_hist.append(create_lang_hist(df))
+        accounts_per_date.append(create_accounts_created_df(df))
+        retweets_wcloud_text.append(create_text_for_retweet_wordcloud(df))
+        htag_wcloud_text.append(create_text_for_htag_wordcloud(df))
+
+    if user is None:
         # if user is not specified, just name it "all". it will be included in the output filenames
         user = 'all'
 
     if tlang is not None:
         tlang_title = langcodes.Language.make(language=tlang).language_name()
-        tw_df = tw_df.loc[tw_df['tweet_language'] == tlang]
     else:
         tlang_title = 'all'
 
     if ulang is not None:
         ulang_title = langcodes.Language.make(language=ulang).language_name()
-        tw_df = tw_df.loc[tw_df['account_language'] == ulang]
     else:
         ulang_title = 'all'
-
-    # after the filters on user and language, check that the DF is not empty
-    if len(tw_df) == 0:
-        raise ValueError('Combination of user and/or language is not valid. Please check user and lang arguments')
 
     title_prefix = f'User: {user} - TLang: {tlang} - ULang:{ulang}'
     fname_prefix = f'user-{user}__tlang-{tlang}__ulang-{ulang}'
     results_folder = f'results_{user}_{tlang_title}_{ulang_title}'
     os.makedirs(results_folder, exist_ok=True)
 
-    # Extract datetime info from column "tweet_time" and put it in new columns that will be used later
-    print('Extracting extra info...')
-    tw_df = extract_datetime_feature(tw_df)
-    if VERBOSE:
-        print(tw_df.info())
+    # todo concat all dataframes merging same index together (based on type of DF)
+    # for this: a different processing is needed.
+    # split read between parallel and all
 
-    # now we are ready for the real work
+    # todo readd this filter, after concatenations
+    # # after the filters on user and language, check that the DF is not empty
+    # if len(df) == 0:
+    #     raise ValueError('Combination of user and/or language is not valid. Please check user and lang arguments')
+
     print('Plotting charts...')
-    plot_density(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
-    plot_tweet_date_list(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
-    plot_volume_interactions(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix,
-                             results_folder=results_folder)
-    plot_clients_histogram(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix,
+    plot_density(heatmap_df=heatmap_df, title_prefix=title_prefix,
+                 fname_prefix=fname_prefix, results_folder=results_folder)
+    plot_tweet_date_list(tweets_per_date=tweets_per_date, title_prefix=title_prefix,
+                         fname_prefix=fname_prefix, results_folder=results_folder)
+    plot_volume_interactions(interactions_per_date=interactions_per_date, title_prefix=title_prefix,
+                             fname_prefix=fname_prefix, results_folder=results_folder)
+    plot_clients_histogram(hist=client_hist, title_prefix=title_prefix, fname_prefix=fname_prefix,
                            results_folder=results_folder)
-    plot_lang_histogram(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
-    plot_accounts_created(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
+
+    plot_lang_histogram(hist=lang_hist, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
+    plot_accounts_created(accounts_per_date=accounts_per_date, title_prefix=title_prefix, fname_prefix=fname_prefix, results_folder=results_folder)
 
     if w:
         print('Plotting wordclouds...')
-        plot_retweet_wordcloud(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix,
+        plot_retweet_wordcloud(text=retweets_wcloud_text, title_prefix=title_prefix, fname_prefix=fname_prefix,
                                results_folder=results_folder)
-        plot_hashtag_wordcloud(df=tw_df, title_prefix=title_prefix, fname_prefix=fname_prefix,
+        plot_hashtag_wordcloud(text=htag_wcloud_text, title_prefix=title_prefix, fname_prefix=fname_prefix,
                                results_folder=results_folder)
 
 
@@ -435,6 +509,6 @@ if __name__ == '__main__':
     print(
         "\x1b[1;34;49m" + "\n\n                 ./oss+:    -\n /d:           .hMMMMMMMNydm/`\n hMMd+`       `NMMMMMMMMMMNdy-\n /MMMMMds/-`  /MMMMMMMMMMMN-         \n .+mMMMMMMMMNmmMMMMMMMMMMMm\n sMNMMMMMMMMMMMMMMMMMMMMMMs\n  sMMMMMMMMMMMMMMMMMMMMMMN.\n   -smMMMMMMMMMMMMMMMMMMM/\n   .dMMMMMMMMMMMMMMMMMMN:\n     :ydNMMMMMMMMMMMMMh.\n     `:omMMMMMMMMMMMy-\n./ymNMMMMMMMMMMMmy/`\n   `-/+ssssso/-`\n" + "\x1b[0m")
     print(
-        "\x1b[1;39;49m" + "  Made with" + "\x1b[0m" + "\x1b[1;31;49m" + " ❤" + "\x1b[0m" + "\x1b[1;39;49m" + " - https://www.github.com/luigigubello (and https://www.github.com/luigigubello)" + "\x1b[0m\n\n")
+        "\x1b[1;39;49m" + "  Made with" + "\x1b[0m" + "\x1b[1;31;49m" + " ❤" + "\x1b[0m" + "\x1b[1;39;49m" + " - https://www.github.com/luigigubello (and https://www.github.com/naikio)" + "\x1b[0m\n\n")
     print('\x1b[1;39;49m' + 'Wait...' + '\x1b[0m')
     run_analysis()
