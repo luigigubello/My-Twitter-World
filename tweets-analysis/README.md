@@ -69,11 +69,11 @@ You can analyse data subsets by dividing them by language. Setting the parameter
 
 Analysing all the English tweets (`en`) in the dataset *china_082019_1_tweets_csv_hashed.csv*
 
-`$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --tpath en`
+`$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --tlang en`
 
 Analysing all the tweets in the dataset *china_082019_1_tweets_csv_hashed.csv* written by English accounts
 
-`$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --upath en`
+`$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --ulang en`
 
 Setting the argument `--tlang LANG` the script generates four graphs: *LANG tweets volume by month*, *LANG tweets interactions volume by month*, *LANG tweets daily rhythm* and *Twitter clients used to write LANG tweets*.</br>
 Setting the argument `--ulang LANG` the script generates six graphs: *Tweets volume of LANG accounts by month*, *Interactions with LANG accounts - Volume by month*, *LANG accounts daily rhythm*, *Number of created LANG accounts by month*, *Twitter clients used by LANG accounts* and *Languages of tweets written by LANG accounts*.</br>
