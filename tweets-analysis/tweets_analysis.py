@@ -3,10 +3,7 @@ from glob import glob
 import time
 import functools
 from datetime import datetime
-from ast import literal_eval
 from itertools import chain
-
-from memory_profiler import profile
 
 import click
 import numpy as np
