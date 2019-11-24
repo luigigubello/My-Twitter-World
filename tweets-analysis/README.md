@@ -70,7 +70,7 @@ It is important to understand the graphs to read the data right. So I try to exp
 `$ python3 tweets_analysis.py --path spain_082019_tweets_csv_hashed.csv -w`
 
 ##### Interactive example
-You can see an interactive example in this [jupyter notebook](./Tweets analysis - interactive.ipynb)
+You can see an interactive example in this [jupyter notebook](Tweets%20analysis%20-%20interactive.ipynb)
 
 ###### Generated graphs
 
