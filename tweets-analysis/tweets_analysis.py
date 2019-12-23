@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from glob import glob
 import time
 import functools
@@ -17,7 +18,7 @@ from wordcloud import WordCloud
 from PIL import Image
 
 # Matplotlib general settings
-plt.rcParams['figure.figsize'] = (21,9)
+plt.rcParams['figure.figsize'] = (21, 9)
 
 # suppress Pandas Warnings, sometimes they are annoying false positives. Comment this out while developing
 pd.options.mode.chained_assignment = None
@@ -57,11 +58,14 @@ def find_csv(path):
             # no csv found in the folder. Return with error
             raise FileNotFoundError("This directory does not contain any CSV file")
 
+        print(f'Found {len(fname_list)} files:')
+        print('\n'.join([Path(f).resolve().name for f in fname_list]))
         return fname_list
 
     else:
         # it's a single file
         # simply return path enclosed in a list with one-element so it can be passed to the function "read_list_of_csv"
+        print(f"Found file: {Path(path).resolve().name}")
         return [path]
 
 
@@ -125,7 +129,7 @@ def filter_user_and_langs(df, user, tlang, ulang):
     return df
 
 
-@timer
+# @timer
 def process_one_chunk(df, user, tlang, ulang):
     """ Process a single DataFrame (subset of the entire one of size=CHUNKSIZE"""
 
@@ -167,8 +171,10 @@ def process_one_chunk(df, user, tlang, ulang):
     accounts_per_month = account_per_date.groupby('month_year_account').sum()
     years = df['account_creation_date'].dt.year.unique()
     max_year, min_year = years.max(), years.min()
-    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS').strftime(
-        '%b %Y')
+
+    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS')
+    month_year_extended = month_year_extended.month_name().str[:3] + ' ' + month_year_extended.year.astype(str)
+
     accounts_per_month = accounts_per_month.reindex(month_year_extended).fillna(0)
 
     # extract username of retweeted users
@@ -199,8 +205,9 @@ def extend_month_year_values(df, for_chart):
     years = df['tweet_time'].dt.year.unique()
     years = years[~np.isnan(years)]  # remove NaNs, otherwise max and min do not work
     max_year, min_year = int(years.max()), int(years.min())
-    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS').strftime(
-        '%b %Y')
+
+    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS')
+    month_year_extended = month_year_extended.month_name().str[:3] + ' ' + month_year_extended.year.astype(str)
 
     if for_chart == 'volume':
         column_to_index = ['is_retweet', 'month_year']
@@ -238,7 +245,7 @@ def create_heatmap_df(df):
 def plot_density(heatmap_df, fname_prefix='', results_folder='', show_chart=False):
     plt.figure()
     ax = sns.heatmap(heatmap_df.pivot('weekday', 'hour', 'n_tweets').fillna(0), annot=False,
-                linewidths=.5)  # pivot is used to make the DF rectangular
+                     linewidths=.5)  # pivot is used to make the DF rectangular
     plt.title(f"Tweets daily rhythm", fontsize=18)
     if not show_chart:
         plt.savefig(f'{results_folder}/{fname_prefix}_density.png', bbox_inches='tight', dpi=200)
@@ -307,7 +314,7 @@ def plot_heatmap(df_heatmaps, results_folder='', fname_prefix='', show_chart=Fal
 
     # plot
     ax = sns.heatmap(df_heatmaps.pivot('weekday', 'hour', 'n_tweets').fillna(0), annot=False,
-                linewidths=.5)  # pivot is used to make the DF rectangular
+                     linewidths=.5)  # pivot is used to make the DF rectangular
     plt.title(f"Tweets daily rhythm", fontsize=15)
     if not show_chart:
         plt.savefig(f'{results_folder}/{fname_prefix}_density.png', bbox_inches='tight', dpi=200)
@@ -327,8 +334,8 @@ def plot_client_histogram(df_client_hist, results_folder='', fname_prefix='', sh
 
     # plot
     plt.xticks(rotation='vertical', fontsize=15)
-    ax = plt.bar(x=hist_short['tweet_client_name'], height=hist_short['# tweets'], color='#2196f3', edgecolor='#64b5f6',
-            width=0.5)
+    ax = plt.bar(x=hist_short['tweet_client_name'], height=hist_short['# tweets'],
+                 color='#2196f3', edgecolor='#64b5f6', width=0.5)
     plt.title(f'Tweets per client', fontsize=18)
     if not show_chart:
         plt.savefig(f'{results_folder}/{fname_prefix}_tweets_per_client.png', bbox_inches='tight', dpi=250)
@@ -350,8 +357,8 @@ def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', sh
 
     # plot
     plt.xticks(rotation='vertical', fontsize=15)
-    ax = plt.bar(x=hist_short['tweet_language'], height=hist_short['# tweets'], color='#2196f3', edgecolor='#64b5f6',
-            width=0.5)
+    ax = plt.bar(x=hist_short['tweet_language'], height=hist_short['# tweets'],
+                 color='#2196f3', edgecolor='#64b5f6', width=0.5)
 
     plt.title(f'Tweets per language', fontsize=10)
     if not show_chart:
@@ -363,10 +370,10 @@ def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', sh
 
 def plot_accounts_created_per_month(df_accounts_per_month, results_folder='', fname_prefix='', show_chart=False):
     ax = plt.bar(x=df_accounts_per_month.index,
-            height=df_accounts_per_month['user_screen_name'],
-            color='#2196f3',
-            edgecolor='#64b5f6',
-            width=0.5)
+                 height=df_accounts_per_month['user_screen_name'],
+                 color='#2196f3',
+                 edgecolor='#64b5f6',
+                 width=0.5)
     x_ticks = df_accounts_per_month.index.drop_duplicates()
     plt.xticks(np.arange(0, len(x_ticks), 3), x_ticks, rotation=45, fontsize=15)
     plt.title(f'Accounts created per month', fontsize=18)
@@ -455,7 +462,7 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
     else:
         ulang_title = 'all'
 
-    title_prefix = f'User: {user_title} - TLang: {tlang} - ULang:{ulang}'
+    title_prefix = f'User: {user_title} - TLang: {tlang_title} - ULang:{ulang_title}'
     fname_prefix = f'user-{user_title}__tlang-{tlang}__ulang-{ulang}'
     results_folder = f'{path.split("/")[-1]}_{user_title}_{tlang_title}_{ulang_title}'
     os.makedirs(results_folder, exist_ok=True)
@@ -463,9 +470,11 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
     print('Parameters for this analysis:')
     print(title_prefix)
     print(f'Looking for CSV files based on --path parameter: {path}')
+
+    df_reader = read_list_of_csv(find_csv(path), chunksize=CHUNKSIZE)
+
     print(f'Running with CHUNKZISE = {CHUNKSIZE} (default is 1000000). '
           f'If memory errors occur, please decrease chunksize parameter (i.e. --chunksize=250000)')
-    df_reader = read_list_of_csv(find_csv(path), chunksize=CHUNKSIZE)
 
     # Prepare empty lists that will be progressively filled with data as we read chunks of files
     df_tweets_stats = []
@@ -489,7 +498,7 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
         list_rtw_usernames.extend(rtw_usernames)
         list_hashtags.extend(hashtags)
 
-        lines_read += CHUNKSIZE
+        lines_read += len(df)
         print(f'{lines_read} tweets read')
 
     print('Analysing tweets...')
