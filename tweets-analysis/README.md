@@ -25,6 +25,7 @@ Options:
   --ulang TEXT    Optional argument. Language of accounts to analyze
   --chunksize INT Optional argument. Default is 1000000. Decrease if you run into memory issues
   -v              Optional argument. Verbose mode that print more information
+  --csv-out       Optional argument. Write output of analysis to CSV files
   --help          Show this message and exit.
 
   ```

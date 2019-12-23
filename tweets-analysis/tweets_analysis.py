@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from glob import glob
 import time
+import sys
 import functools
 from datetime import datetime
 from itertools import chain
@@ -16,6 +17,7 @@ import matplotlib.pyplot as plt
 import langcodes
 from wordcloud import WordCloud
 from PIL import Image
+from tqdm import tqdm
 
 # Matplotlib general settings
 plt.rcParams['figure.figsize'] = (21, 9)
@@ -67,6 +69,11 @@ def find_csv(path):
         # simply return path enclosed in a list with one-element so it can be passed to the function "read_list_of_csv"
         print(f"Found file: {Path(path).resolve().name}")
         return [path]
+
+
+def row_count(file):
+    with open(file, encoding='utf-8') as f:
+        return sum(1 for line in f) - 1  # discard header as we are usually dealing with CSVs here
 
 
 # @profile
@@ -436,8 +443,9 @@ def plot_wordcloud_hashtags(list_hashtags, results_folder='', fname_prefix='', s
 @click.option('--ulang', help='Optional argument. Language of accounts to analyze', required=False)
 @click.option('--chunksize', help='Optional argument. Default is 1000000. Decrease if you run into memory issues', required=False, default=1000000)
 @click.option('-v', help='Optional argument. Verbose mode that print more information', required=False, is_flag=True)
+@click.option('--csv-out', help='Optional argument. Write output of analysis to CSV files', required=False, is_flag=True)
 @timer
-def run_analysis(path, w, user, tlang, ulang, chunksize, v):
+def run_analysis(path, w, user, tlang, ulang, chunksize, v, csv_out):
     if v:
         global VERBOSE
         VERBOSE = True
@@ -471,10 +479,15 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
     print(title_prefix)
     print(f'Looking for CSV files based on --path parameter: {path}')
 
-    df_reader = read_list_of_csv(find_csv(path), chunksize=CHUNKSIZE)
+    file_list = find_csv(path)
+    lines = [row_count(f) for f in file_list]
+    lines = sum(lines)
+
+    df_reader = read_list_of_csv(file_list, chunksize=CHUNKSIZE)
 
     print(f'Running with CHUNKZISE = {CHUNKSIZE} (default is 1000000). '
           f'If memory errors occur, please decrease chunksize parameter (i.e. --chunksize=250000)')
+    print()   # don't delete. it's needed to not mess up the carriage return inside read loop (line 504)
 
     # Prepare empty lists that will be progressively filled with data as we read chunks of files
     df_tweets_stats = []
@@ -485,21 +498,20 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
     list_rtw_usernames = ['']
     list_hashtags = ['']
 
-    lines_read = 0
-    for df in df_reader:
-        tweets_stats, heatmap_df, client_hist, lang_hist, \
-            accounts_per_month, rtw_usernames, hashtags = process_one_chunk(df, user=user, tlang=tlang, ulang=ulang)
+    with tqdm(total=lines, ncols=80, file=sys.stdout) as pbar:  # instantiate TQDM progress bar
+        for df in df_reader:
+            tweets_stats, heatmap_df, client_hist, lang_hist, \
+                accounts_per_month, rtw_usernames, hashtags = process_one_chunk(df, user=user, tlang=tlang, ulang=ulang)
 
-        df_tweets_stats.append(tweets_stats)
-        df_heatmaps.append(heatmap_df)
-        df_client_hist.append(client_hist)
-        df_lang_hist.append(lang_hist)
-        df_accounts_per_month.append(accounts_per_month)
-        list_rtw_usernames.extend(rtw_usernames)
-        list_hashtags.extend(hashtags)
-
-        lines_read += len(df)
-        print(f'{lines_read} tweets read')
+            df_tweets_stats.append(tweets_stats)
+            df_heatmaps.append(heatmap_df)
+            df_client_hist.append(client_hist)
+            df_lang_hist.append(lang_hist)
+            df_accounts_per_month.append(accounts_per_month)
+            list_rtw_usernames.extend(rtw_usernames)
+            list_hashtags.extend(hashtags)
+            # update progress bar
+            pbar.update(len(df))
 
     print('Analysing tweets...')
     df_tweets_stats = pd.concat(df_tweets_stats)
@@ -509,6 +521,14 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v):
     df_accounts_per_month = pd.concat(df_accounts_per_month)
     list_rtw_usernames = ' '.join(list_rtw_usernames)
     list_hashtags = ' '.join(list_hashtags)
+
+    if csv_out:
+        print('Writing output as CSV files...')
+        df_tweets_stats.to_csv(os.path.join(results_folder, 'Tweet statistics.csv'))
+        df_heatmaps.to_csv(os.path.join(results_folder, 'heatmap.csv'))
+        df_client_hist.to_csv(os.path.join(results_folder, 'client_histograms.csv'))
+        df_lang_hist.to_csv(os.path.join(results_folder, 'language_histograms.csv'))
+        df_accounts_per_month.to_csv(os.path.join(results_folder, 'accounts_created_monthly.csv'))
 
     print('Plotting charts...')
     plot_heatmap(df_heatmaps, results_folder, fname_prefix)
