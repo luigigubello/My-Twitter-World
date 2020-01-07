@@ -107,7 +107,8 @@ def hashtag_analisys(api, directory, input_id):
 
 		with open(os.path.join(fullpathname, search_word + '_' + day_story + '.csv'), 'a') as csvfile:
 			filewriter = csv.writer(csvfile, sys.stdout, lineterminator='\n', delimiter=',',quotechar='"', quoting=csv.QUOTE_ALL)
-			filewriter.writerow([t_tweet_date[i], t_tweet_id[i], t_tweet_text[i], t_tweet_retweet[i], t_tweet_favorite[i], t_tweet_truncated[i], t_tweet_ua[i], t_tweet_country[i], t_user_id[i], t_screen_name[i], t_name[i], t_description[i], t_follower_count[i], t_following_count[i], t_created_at[i], t_statuses_count[i], t_profile_image_url[i], t_default_image[i]])		i += 1
+			filewriter.writerow([t_tweet_date[i], t_tweet_id[i], t_tweet_text[i], t_tweet_retweet[i], t_tweet_favorite[i], t_tweet_truncated[i], t_tweet_ua[i], t_tweet_country[i], t_user_id[i], t_screen_name[i], t_name[i], t_description[i], t_follower_count[i], t_following_count[i], t_created_at[i], t_statuses_count[i], t_profile_image_url[i], t_default_image[i]])		
+		i += 1
 
 	return(input_id)
 
