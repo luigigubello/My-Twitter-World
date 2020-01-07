@@ -103,7 +103,7 @@ def hashtag_analisys(api, directory, input_id):
 	t_default_image = (list(post['user']['default_profile_image'] for post in search))
 	
 	i = 0
-	while i < len(list_screen_name):
+	while i < len(t_screen_name):
 
 		with open(os.path.join(fullpathname, search_word + '_' + day_story + '.csv'), 'a') as csvfile:
 			filewriter = csv.writer(csvfile, sys.stdout, lineterminator='\n', delimiter=',',quotechar='"', quoting=csv.QUOTE_ALL)
