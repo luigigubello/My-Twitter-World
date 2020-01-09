@@ -19,8 +19,10 @@ If you want to support me you can offer me a coffee ☕</br></br>
 
 ### 🔗 Some Twitter threads:
 
+[🇬🇧] [Pro-Iran propaganda from Lebanon](https://twitter.com/evaristegal0is/status/1215007626075033603)<br />
 [🇬🇧] [Some numbers about the suspended accounts linked to Partido Popular](https://twitter.com/evaristegal0is/status/1180804950651215872)<br />
 [🇬🇧] [The suspended user @IYASHI_Y](https://twitter.com/evaristegal0is/status/1179373176670826496)<br />
+[🇮🇹] [La propaganda russa sull'aereo MH17](https://twitter.com/evaristegal0is/status/1185549948768673793)<br />
 [🇮🇹] [Lo strano utente @JppMorgann](https://threadreaderapp.com/thread/1166660678222045184.html)<br/>
 [🇬🇧] [About Twitter dataset on the disinformation on situation in Hong Kong](https://threadreaderapp.com/thread/1164081670573760513.html)<br/>
 [🇮🇹] [Internet Research Agency dataset e situazione in Italia](https://threadreaderapp.com/thread/1158091743050522626.html)<br/>
