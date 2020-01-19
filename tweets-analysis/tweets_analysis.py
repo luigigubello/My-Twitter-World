@@ -6,6 +6,7 @@ import sys
 import functools
 from datetime import datetime
 from itertools import chain
+import csv
 
 import click
 import numpy as np
@@ -72,8 +73,10 @@ def find_csv(path):
 
 
 def row_count(file):
-    with open(file, encoding='utf-8') as f:
-        return sum(1 for line in f) - 1  # discard header as we are usually dealing with CSVs here
+    with open(file, encoding='utf-8') as csv_file:
+        file_obj = csv.reader((l.replace('\0', '') for l in csv_file))
+        n_rows = sum(1 for line in file_obj) - 1  # discard header as we are usually dealing with CSVs here
+    return n_rows
 
 
 # @profile
@@ -487,7 +490,6 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v, csv_out):
 
     print(f'Running with CHUNKZISE = {CHUNKSIZE} (default is 1000000). '
           f'If memory errors occur, please decrease chunksize parameter (i.e. --chunksize=250000)')
-    print()   # don't delete. it's needed to not mess up the carriage return inside read loop (line 504)
 
     # Prepare empty lists that will be progressively filled with data as we read chunks of files
     df_tweets_stats = []
