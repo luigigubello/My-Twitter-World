@@ -174,18 +174,9 @@ def process_one_chunk(df, user, tlang, ulang):
     ##################
     lang_hist = df.groupby('tweet_language').size().reset_index().rename(columns={0: '# tweets'})
 
-    # account created per month
+    # account created per date (just saving list of unique users here, will process later in another function)
     ##################
-    account_per_date = df.groupby(['account_creation_date'])['user_screen_name'].nunique().reset_index()
-    account_per_date['month_year_account'] = account_per_date['account_creation_date'].dt.month_name().str[:3] + ' ' + account_per_date['account_creation_date'].dt.year.astype(str)
-    accounts_per_month = account_per_date.groupby('month_year_account').sum()
-    years = df['account_creation_date'].dt.year.unique()
-    max_year, min_year = years.max(), years.min()
-
-    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS')
-    month_year_extended = month_year_extended.month_name().str[:3] + ' ' + month_year_extended.year.astype(str)
-
-    accounts_per_month = accounts_per_month.reindex(month_year_extended).fillna(0)
+    users_creation_dates = df.groupby('user_screen_name')['account_creation_date'].first().reset_index()
 
     # extract username of retweeted users
     ##################
@@ -206,7 +197,7 @@ def process_one_chunk(df, user, tlang, ulang):
     # flatten list of lists
     hashtags = [htag for sublist in ll for htag in sublist if htag != '']
 
-    return tweets_stats, heatmap_df, client_hist, lang_hist, accounts_per_month, rtw_usernames, hashtags
+    return tweets_stats, heatmap_df, client_hist, lang_hist, users_creation_dates, rtw_usernames, hashtags
 
 
 def extend_month_year_values(df, for_chart):
@@ -252,6 +243,25 @@ def create_heatmap_df(df):
     return heatmap_df
 
 
+def create_hist_account_creations(df_users_creation_dates):
+
+    df_users_creation_dates = pd.concat(df_users_creation_dates)
+
+    df_users_creation_dates = df_users_creation_dates.groupby('user_screen_name')['account_creation_date'].first().reset_index()
+
+    df_users_creation_dates['month_year_account'] = df_users_creation_dates['account_creation_date'].dt.month_name().str[:3] + ' ' + df_users_creation_dates['account_creation_date'].dt.year.astype(str)
+    accounts_created_per_month = df_users_creation_dates.groupby('month_year_account').size()
+    years = df_users_creation_dates['account_creation_date'].dt.year.unique()
+    max_year, min_year = years.max(), years.min()
+
+    month_year_extended = pd.date_range(datetime(min_year, 1, 1), datetime(max_year, 12, 31), freq='MS')
+    month_year_extended = month_year_extended.month_name().str[:3] + ' ' + month_year_extended.year.astype(str)
+
+    accounts_created_per_month = accounts_created_per_month.reindex(month_year_extended).fillna(0)
+
+    return accounts_created_per_month
+
+
 def plot_density(heatmap_df, fname_prefix='', results_folder='', show_chart=False):
     plt.figure()
     ax = sns.heatmap(heatmap_df.pivot('weekday', 'hour', 'n_tweets').fillna(0), annot=False,
@@ -264,13 +274,16 @@ def plot_density(heatmap_df, fname_prefix='', results_folder='', show_chart=Fals
         return ax
 
 
-def plot_tweets_vs_retweets(df_tweets_stats, results_folder='', fname_prefix='', show_chart=False):
+def plot_tweets_vs_retweets(df_tweets_stats, results_folder='', fname_prefix='', csv_out=False, show_chart=False):
     df_rtw = df_tweets_stats.groupby(['month_year', 'is_retweet']).agg({
         'n_tweets': 'sum',
         'tweet_time': 'first'
     }).reset_index().sort_values('tweet_time')
 
     df_rtw = extend_month_year_values(df_rtw, 'volume')
+
+    if csv_out:
+        df_rtw.to_csv(os.path.join(results_folder, 'Tweet vs Retweets.csv'))
 
     ax = sns.lineplot(data=df_rtw, x='month_year', y='n_tweets', hue='is_retweet', sort=False)
     ax.xaxis.set_major_locator(ticker.AutoLocator())
@@ -283,7 +296,7 @@ def plot_tweets_vs_retweets(df_tweets_stats, results_folder='', fname_prefix='',
         return ax
 
 
-def plot_interactions(df_tweets_stats, results_folder='', fname_prefix='', show_chart=False):
+def plot_interactions(df_tweets_stats, results_folder='', fname_prefix='', csv_out=False, show_chart=False):
     interactions_per_date = df_tweets_stats.groupby(['month_year']).agg({
         'quote_count': 'sum',
         'like_count': 'sum',
@@ -299,13 +312,16 @@ def plot_interactions(df_tweets_stats, results_folder='', fname_prefix='', show_
     )
     interactions_per_date = extend_month_year_values(interactions_per_date, 'interactions')
 
+    if csv_out:
+        interactions_per_date.to_csv(os.path.join(results_folder, 'Interactions.csv'))
+
     plt.figure(figsize=(15, 8))
     ax = sns.lineplot(data=interactions_per_date, x='month_year', y='n interactions',
                       hue='interaction', sort=False)
     # x_ticks = interactions_per_date['month_year'].drop_duplicates().reset_index(drop=True)
     # plt.xticks(np.arange(0, len(x_ticks), 3), x_ticks, rotation=45, fontsize=5)
-    ax.xaxis.set_major_locator(ticker.AutoLocator())
     plt.xticks(rotation=45, fontsize=15)
+    ax.xaxis.set_major_locator(ticker.AutoLocator())
     plt.title(f'Volume per interaction', fontsize=18)
     if not show_chart:
         plt.savefig(f'{results_folder}/{fname_prefix}_volume_interactions.png', bbox_inches='tight', dpi=250)
@@ -314,13 +330,16 @@ def plot_interactions(df_tweets_stats, results_folder='', fname_prefix='', show_
         return ax
 
 
-def plot_heatmap(df_heatmaps, results_folder='', fname_prefix='', show_chart=False):
+def plot_heatmap(df_heatmaps, results_folder='', fname_prefix='', csv_out=False, show_chart=False):
     df_heatmaps = df_heatmaps.groupby(['hour', 'weekday']).sum().reset_index()
 
     df_heatmaps['weekday'] = pd.Categorical(
         df_heatmaps['weekday'],
         categories=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         ordered=True)
+
+    if csv_out:
+        df_heatmaps.to_csv(os.path.join(results_folder, 'heatmap.csv'))
 
     # plot
     ax = sns.heatmap(df_heatmaps.pivot('weekday', 'hour', 'n_tweets').fillna(0), annot=False,
@@ -333,7 +352,7 @@ def plot_heatmap(df_heatmaps, results_folder='', fname_prefix='', show_chart=Fal
         return ax
 
 
-def plot_client_histogram(df_client_hist, results_folder='', fname_prefix='', show_chart=False):
+def plot_client_histogram(df_client_hist, results_folder='', fname_prefix='', csv_out=False, show_chart=False):
     client_hist = df_client_hist.groupby('tweet_client_name').sum().sort_values('# tweets',
                                                                                 ascending=False).reset_index()
 
@@ -341,6 +360,9 @@ def plot_client_histogram(df_client_hist, results_folder='', fname_prefix='', sh
     hist_short = hist_short.append(
         {'tweet_client_name': 'Others', '# tweets': client_hist[30:].sum()['# tweets']},  # last row with "Others"
         ignore_index=True)
+
+    if csv_out:
+        hist_short.to_csv(os.path.join(results_folder, 'client_histograms.csv'))
 
     # plot
     plt.xticks(rotation='vertical', fontsize=15)
@@ -354,7 +376,7 @@ def plot_client_histogram(df_client_hist, results_folder='', fname_prefix='', sh
         return ax
 
 
-def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', show_chart=False):
+def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', csv_out=False, show_chart=False):
     lang_hist = df_lang_hist.groupby('tweet_language').sum().sort_values('# tweets', ascending=False).reset_index()
 
     hist_short = lang_hist[:30].copy()
@@ -364,6 +386,9 @@ def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', sh
 
     hist_short['tweet_language'] = hist_short['tweet_language'].apply(
         lambda x: langcodes.Language.make(language=x).language_name())
+
+    if csv_out:
+        hist_short.to_csv(os.path.join(results_folder, 'language_histograms.csv'))
 
     # plot
     plt.xticks(rotation='vertical', fontsize=15)
@@ -378,14 +403,20 @@ def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', sh
         return ax
 
 
-def plot_accounts_created_per_month(df_accounts_per_month, results_folder='', fname_prefix='', show_chart=False):
+def plot_accounts_created_per_month(df_accounts_per_month, results_folder='', fname_prefix='',
+                                    csv_out=False, show_chart=False):
+    if csv_out:
+        df_accounts_per_month.to_csv(os.path.join(results_folder, 'accounts_created_monthly.csv'))
+
     ax = plt.bar(x=df_accounts_per_month.index,
-                 height=df_accounts_per_month['user_screen_name'],
+                 height=df_accounts_per_month,
                  color='#2196f3',
                  edgecolor='#64b5f6',
                  width=0.5)
-    x_ticks = df_accounts_per_month.index.drop_duplicates()
-    plt.xticks(np.arange(0, len(x_ticks), 3), x_ticks, rotation=45, fontsize=15)
+
+    x_ticks = df_accounts_per_month.index
+    plt.xticks(np.arange(0, len(x_ticks), 4), x_ticks[np.arange(0, len(x_ticks), 4)], rotation=60, fontsize=12)
+
     plt.title(f'Accounts created per month', fontsize=18)
     if not show_chart:
         plt.savefig(f'{results_folder}/{fname_prefix}_accounts_created.png', bbox_inches='tight', dpi=250)
@@ -496,20 +527,20 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v, csv_out):
     df_heatmaps = []
     df_client_hist = []
     df_lang_hist = []
-    df_accounts_per_month = []
+    df_users_creation_dates = []
     list_rtw_usernames = ['']
     list_hashtags = ['']
 
     with tqdm(total=lines, ncols=80, file=sys.stdout) as pbar:  # instantiate TQDM progress bar
         for df in df_reader:
             tweets_stats, heatmap_df, client_hist, lang_hist, \
-                accounts_per_month, rtw_usernames, hashtags = process_one_chunk(df, user=user, tlang=tlang, ulang=ulang)
+                users_creation_dates, rtw_usernames, hashtags = process_one_chunk(df, user=user, tlang=tlang, ulang=ulang)
 
             df_tweets_stats.append(tweets_stats)
             df_heatmaps.append(heatmap_df)
             df_client_hist.append(client_hist)
             df_lang_hist.append(lang_hist)
-            df_accounts_per_month.append(accounts_per_month)
+            df_users_creation_dates.append(users_creation_dates)
             list_rtw_usernames.extend(rtw_usernames)
             list_hashtags.extend(hashtags)
             # update progress bar
@@ -520,25 +551,17 @@ def run_analysis(path, w, user, tlang, ulang, chunksize, v, csv_out):
     df_heatmaps = pd.concat(df_heatmaps)
     df_client_hist = pd.concat(df_client_hist)
     df_lang_hist = pd.concat(df_lang_hist)
-    df_accounts_per_month = pd.concat(df_accounts_per_month)
+    df_accounts_created_p_month = create_hist_account_creations(df_users_creation_dates)
     list_rtw_usernames = ' '.join(list_rtw_usernames)
     list_hashtags = ' '.join(list_hashtags)
 
-    if csv_out:
-        print('Writing output as CSV files...')
-        df_tweets_stats.to_csv(os.path.join(results_folder, 'Tweet statistics.csv'))
-        df_heatmaps.to_csv(os.path.join(results_folder, 'heatmap.csv'))
-        df_client_hist.to_csv(os.path.join(results_folder, 'client_histograms.csv'))
-        df_lang_hist.to_csv(os.path.join(results_folder, 'language_histograms.csv'))
-        df_accounts_per_month.to_csv(os.path.join(results_folder, 'accounts_created_monthly.csv'))
-
     print('Plotting charts...')
-    plot_heatmap(df_heatmaps, results_folder, fname_prefix)
-    plot_tweets_vs_retweets(df_tweets_stats, results_folder, fname_prefix)
-    plot_interactions(df_tweets_stats, results_folder, fname_prefix)
-    plot_accounts_created_per_month(df_accounts_per_month, results_folder, fname_prefix)
-    plot_client_histogram(df_client_hist, results_folder, fname_prefix)
-    plot_language_histogram(df_lang_hist, results_folder, fname_prefix)
+    plot_heatmap(df_heatmaps, results_folder, fname_prefix, csv_out=csv_out)
+    plot_tweets_vs_retweets(df_tweets_stats, results_folder, fname_prefix, csv_out=csv_out)
+    plot_interactions(df_tweets_stats, results_folder, fname_prefix, csv_out=csv_out)
+    plot_accounts_created_per_month(df_accounts_created_p_month, results_folder, fname_prefix, csv_out=csv_out)
+    plot_client_histogram(df_client_hist, results_folder, fname_prefix, csv_out=csv_out)
+    plot_language_histogram(df_lang_hist, results_folder, fname_prefix, csv_out=csv_out)
     if w:
         plot_wordcloud_retweets(list_rtw_usernames, results_folder, fname_prefix)
         plot_wordcloud_hashtags(list_hashtags, results_folder, fname_prefix)
