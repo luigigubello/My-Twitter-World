@@ -283,7 +283,7 @@ def plot_tweets_vs_retweets(df_tweets_stats, results_folder='', fname_prefix='',
     df_rtw = extend_month_year_values(df_rtw, 'volume')
 
     if csv_out:
-        df_rtw.to_csv(os.path.join(results_folder, 'Tweet vs Retweets.csv'))
+        df_rtw.drop(columns=['tweet_time']).to_csv(os.path.join(results_folder, 'Tweet vs Retweets.csv'))
 
     ax = sns.lineplot(data=df_rtw, x='month_year', y='n_tweets', hue='is_retweet', sort=False)
     ax.xaxis.set_major_locator(ticker.AutoLocator())
@@ -406,7 +406,7 @@ def plot_language_histogram(df_lang_hist, results_folder='', fname_prefix='', cs
 def plot_accounts_created_per_month(df_accounts_per_month, results_folder='', fname_prefix='',
                                     csv_out=False, show_chart=False):
     if csv_out:
-        df_accounts_per_month.to_csv(os.path.join(results_folder, 'accounts_created_monthly.csv'))
+        df_accounts_per_month.to_csv(os.path.join(results_folder, 'accounts_created_monthly.csv'), header=True)
 
     ax = plt.bar(x=df_accounts_per_month.index,
                  height=df_accounts_per_month,
