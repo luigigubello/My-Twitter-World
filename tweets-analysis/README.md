@@ -1,8 +1,8 @@
 # Analysis tool of Twitter dataset tweets 🦆
 
 ### 👥 Authors
-<a href="https://twitter.com/intent/follow?screen_name=naikio"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @naikio"></a></br>
-<a href="https://twitter.com/intent/follow?screen_name=evaristegal0is"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @evaristegal0is"></a>
+Niccolò Battolla - <a href="https://twitter.com/intent/follow?screen_name=naikio"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @naikio"></a></br>
+Luigi Gubello - <a href="https://twitter.com/intent/follow?screen_name=evaristegal0is"><img src="https://img.shields.io/twitter/follow/evaristegal0is?style=social" alt="Follow @evaristegal0is"></a>
 
 ### ℹ️ About
 
