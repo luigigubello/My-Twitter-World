@@ -5,3 +5,5 @@ numpy
 seaborn
 Pillow
 matplotlib==3.1.0
+click
+tqdm

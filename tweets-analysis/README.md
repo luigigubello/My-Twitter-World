@@ -14,36 +14,25 @@ If you want to support me you can offer me a coffee ☕</br></br>
 ### ⚙️ How To Use
 
 ```
-usage: tweets_analysis.py [-h]
-                           (--path [PATH [PATH ...]] | --dirpath DIRPATH | --split [SPLIT [SPLIT ...]])
-                           [--index INDEX] [--tlang TLANG | --ulang ULANG]
-                           [-w] [-top] [-csv] [-txt] [-v]
+Usage: tweet-analysis.py [OPTIONS]
 
-Twitter disinformation datasets' analysis
+Options:
+  --path TEXT     Path of the Twitter Dataset. Can be a single CSV file or a
+                  directory containing multiple CSVs  [required]
+  -w              Include WordCloud in the analysis.
+  --user TEXT     Optional argument. Run the analysis only for the selected user
+  --tlang TEXT    Optional argument. Language of tweets to analyze
+  --ulang TEXT    Optional argument. Language of accounts to analyze
+  --chunksize INT Optional argument. Default is 1000000. Decrease if you run into memory issues
+  -v              Optional argument. Verbose mode that print more information
+  --csv-out       Optional argument. Write output of analysis to CSV files
+  --help          Show this message and exit.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  --path [PATH [PATH ...]]
-                        path of Twitter dataset
-  --dirpath DIRPATH     path of the directory containing Twitter dataset(s)
-  --split [SPLIT [SPLIT ...]]
-                        split a CSV file in smaller CSV files, it can be slow
-  --index INDEX         number of rows of each splitted CSV files [default:
-                        --index=1000000]
-  --tlang TLANG         language of tweets to analyse [default: --tlang=all]
-  --ulang ULANG         language of accounts to analyse [default: --ulang=all]
-  -w                    large wordclouds are slow to build, so active this
-                        parameter only if you are patient
-  -top                  generate wordclouds with at most the 100 most frequent
-                        words, saving your time
-  -csv                  save info into csv files
-  -txt                  save all details into txt files
-  -v                    verbose mode
   ```
 
 ### 📝 Examples
 
-The script requires one of the following arguments `--path`, `--dirpath` or `--split`. To analyse a dataset you can use the arguments `--path`, if you want to merge two or more CSV files you can use the arguments `--path` by writing multiple file paths or `--dirpath` by writing the directory path where there are all the CSV files.
+The script requires only the `--path` argument. You can pass either a single CSV file, or a folder (in which case, all the CSV inside will be read and concatenated for the analysis)
 
 ##### Example
 
@@ -51,19 +40,17 @@ Analysing the dataset *china_082019_1_tweets_csv_hashed.csv*
 
 `$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv`
 
-Mergering and analysing the datasets *china_082019_1_tweets_csv_hashed.csv* and *china_082019_1_tweets_csv_hashed.csv*
+Mergering and analysing the datasets *china_082019_1_tweets_csv_hashed.csv* and *china_082019_1_tweets_csv_hashed.csv*:
+Assuming these files are in a folder called "china_dataset":
 
-`python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv china_082019_2_tweets_csv_hashed.csv`
+`python3 tweets_analysis.py --path china_dataset`
 
-or
+The data is read in chunks thanks to pandas's read_csv functionalities. Memory should not be a problem, but if you run into memory issues, please try to decrease the default chunksize (defauls is 1000000, something below 500000 should run on pretty much any hardware)
+`python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed --chunksize 250000`
 
-`python3 tweets_analysis.py --dirpath /path/of/your/CSV/files`
+You can analyse data subsets by dividing them by language. Setting the parameter `--tlang LANG` the script analyses only tweets that have the value `LANG` in the column `tweet_language`, setting the parameter `--ulang LANG` the script analyses all the tweets published by the accounts that have the value `LANG` in the column `account_language`. In the columns `tweet_language` and `account_language` Twitter have formated the values as *ISO 639-1 alpha-2*, *ISO 639-3 alpha-3* or *ISO 639-1 alpha-2* combined with an *ISO 3166-1 alpha-2* localization, so you have to use these formats to set the arguments.
 
-If a dataset is too large you can use the argument ``--split`` to split the CSV file into smaller CSV files. The argument ``--split`` can accept multiple files to split. You can also choose the number of rows of each splitted file by using the optinal argument ``--index NUMBER``, the default value is `1000000`.
-
-💡 **Tip:** If you have splitted a big dataset, you can repeat an analysis without to split it again just typing `--dirpath PATH` where `PATH` is the directory where you have splitted the dataset the first time.
-
-You can analyse data subsets by dividing them by language. Setting the parameter `--tlang LANG` the script analyses only tweets that have the value `LANG` in the column `tweet_language`, setting the parameter `--ulang LANG` the script analyses all the tweets published by the accounts that have the value `LANG` in the column `account_language`. In the columns `tweet_language` and `account_language` Twitter have formated the values as *ISO 639-1 alpha-2*, *ISO 639-3 alpha-3* or *ISO 639-1 alpha-2* combined with an *ISO 3166-1 alpha-2* localization, so you have to use these formats to set the arguments. Both `--tlang` and `--ulang` have the default value `all`.
+If `ulang`, `tlang`, or `user` are not specified, no filtering is performed.
 
 ##### Example
 
@@ -75,24 +62,16 @@ Analysing all the tweets in the dataset *china_082019_1_tweets_csv_hashed.csv* w
 
 `$ python3 tweets_analysis.py --path china_082019_1_tweets_csv_hashed.csv --ulang en`
 
-Setting the argument `--tlang LANG` the script generates four graphs: *LANG tweets volume by month*, *LANG tweets interactions volume by month*, *LANG tweets daily rhythm* and *Twitter clients used to write LANG tweets*.</br>
-Setting the argument `--ulang LANG` the script generates six graphs: *Tweets volume of LANG accounts by month*, *Interactions with LANG accounts - Volume by month*, *LANG accounts daily rhythm*, *Number of created LANG accounts by month*, *Twitter clients used by LANG accounts* and *Languages of tweets written by LANG accounts*.</br>
-The optional argument `-w` generates two wordclouds (*the most frequent retweeted users* and *the most frequent hashtags*), but this process is **very slow**. You can save your time by using the arguments `-w -top`, so in the wordclouds there will be at most the 100 most frequent words.</br>
-By setting the arguments `-csv` and/or `-txt` you can save all data analysed by the script to create the graphs in handy CSV files and text files.
-
-##### Example
-
-Analysing all tweets in the dataset *spain_082019_tweets_csv_hashed.csv* and saving data in CSV files and text files.
-
-`$ python3 tweets_analysis.py --path spain_082019_tweets_csv_hashed.csv -w -top -csv -txt -v`
-
 ### 📊 How to read the graphs
 
 It is important to understand the graphs to read the data right. So I try to explain how to do by using the [Spanish dataset linked to Partido Popular](https://blog.twitter.com/en_us/topics/company/2019/info-ops-disclosure-data-september-2019.html) as case study.
 
-##### Case study: Spain 🇪🇸
+#### Case study: Spain 🇪🇸
 
-`$ python3 tweets_analysis.py --path spain_082019_tweets_csv_hashed.csv -w -top -csv -txt -v`
+`$ python3 tweets_analysis.py --path spain_082019_tweets_csv_hashed.csv -w`
+
+##### Interactive example
+You can see an interactive example in this [jupyter notebook](Tweets%20analysis%20-%20interactive.ipynb)
 
 ###### Generated graphs
 
